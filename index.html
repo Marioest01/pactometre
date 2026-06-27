@@ -531,55 +531,62 @@ if('serviceWorker' in navigator){
 }
 
 
-// Generar icono PNG via canvas per iOS PWA
+// Generar icono PNG via canvas - Opció 5A amb Manresa 2027
 (function(){
   const c = document.createElement('canvas');
-  c.width = c.height = 180;
+  c.width = c.height = 512;
   const ctx = c.getContext('2d');
-  // Fons
-  ctx.fillStyle = '#0a0c14';
-  roundRect(ctx, 0, 0, 180, 180, 38); ctx.fill();
-  // Card interior
-  ctx.fillStyle = '#111422';
-  roundRect(ctx, 8, 8, 164, 164, 28); ctx.fill();
-  // Colors partits
-  const colors = ['#F59E0B','#38BDF8','#EF4444','#EAB308','#8B5CF6','#10B981',
-                   '#F59E0B','#38BDF8','#EF4444','#EAB308','#8B5CF6','#84CC16'];
-  const sz = 22, gap = 6;
-  // Columna esquerra exterior (x=18)
-  const cols = [18, 46, 114, 142];
-  const rows = [62, 90, 118, 146, 174, 202]; // 6 files... massa. Reduim
-  // Layout: 2 cols esquerra, 2 cols dreta, 6 files
-  const r2 = [52, 76, 100, 124, 148, 172];
-  const c2 = [14, 38, 110, 134];
-  const sz2 = 20;
-  let ci = 0;
-  for(let col=0; col<4; col++){
-    for(let row=0; row<6; row++){
-      ctx.fillStyle = colors[ci % colors.length];
-      roundRect(ctx, c2[col], r2[row], sz2, sz2, 4); ctx.fill();
-      ci++;
-    }
-  }
-  // Alcalde centrat a dalt (blau accent)
-  ctx.fillStyle = '#4f8ef7';
-  roundRect(ctx, 70, 20, 40, 28, 6); ctx.fill();
 
-  const png = c.toDataURL('image/png');
-  // Posar com apple-touch-icon
-  let link = document.querySelector('link[rel="apple-touch-icon"]');
-  if(!link){ link = document.createElement('link'); link.rel = 'apple-touch-icon'; document.head.appendChild(link); }
-  link.href = png;
-
-  function roundRect(ctx, x, y, w, h, r){
+  function rr(x,y,w,h,r){
     ctx.beginPath();
-    ctx.moveTo(x+r, y);
-    ctx.lineTo(x+w-r, y); ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-    ctx.lineTo(x+w, y+h-r); ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-    ctx.lineTo(x+r, y+h); ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-    ctx.lineTo(x, y+r); ctx.quadraticCurveTo(x, y, x+r, y);
+    ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
     ctx.closePath();
   }
+
+  // Fons exterior
+  ctx.fillStyle = '#0a0c14';
+  rr(0,0,512,512,110); ctx.fill();
+
+  // Card interior
+  ctx.fillStyle = '#111422';
+  rr(28,28,456,456,82); ctx.fill();
+
+  // Text MANRESA 2027 a dalt en blau
+  ctx.fillStyle = '#4f8ef7';
+  ctx.font = 'bold 38px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('MANRESA 2027', 256, 100);
+
+  // 6 barres verticals proporcionals als escons 7,6,4,3,2,2
+  const bars = [
+    {x:50,  h:340, color:'#F59E0B'},
+    {x:130, h:310, color:'#38BDF8'},
+    {x:210, h:240, color:'#EF4444'},
+    {x:290, h:200, color:'#EAB308'},
+    {x:370, h:160, color:'#8B5CF6'},
+    {x:430, h:160, color:'#10B981'},
+  ];
+  const baseY = 440, barW = 52, rad = 14;
+  bars.forEach(b=>{
+    ctx.fillStyle = b.color;
+    rr(b.x, baseY - b.h, barW, b.h, rad); ctx.fill();
+  });
+
+  // Línia base
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(40, 442); ctx.lineTo(472, 442);
+  ctx.stroke();
+
+  const png = c.toDataURL('image/png');
+  let link = document.querySelector('link[rel="apple-touch-icon"]');
+  if(!link){ link = document.createElement('link'); link.rel='apple-touch-icon'; document.head.appendChild(link); }
+  link.href = png;
 })();
 
 renderAll();
