@@ -10,6 +10,17 @@
 <meta name="theme-color" content="#0a0c14">
 <title>Pactometre Manresa</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+// iOS PWA height fix - ha d'anar ABANS del CSS
+(function(){
+  function fix(){
+    document.documentElement.style.setProperty('--real-vh', window.innerHeight + 'px');
+  }
+  fix();
+  window.addEventListener('resize', fix);
+  window.addEventListener('orientationchange', function(){ setTimeout(fix, 200); });
+})();
+</script>
 <style>
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 :root {
@@ -27,10 +38,10 @@ html { height: 100%; }
 body {
   font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
   display:flex; flex-direction:column;
-  height: calc(var(--vh, 1vh) * 100);
+  height: 100vh;
+  height: var(--real-vh, 100vh);
   overflow:hidden;
   padding-top:var(--st);
-  padding-bottom:var(--sb);
 }
 
 /* ── HEADER ── */
@@ -635,16 +646,6 @@ if('serviceWorker' in navigator){
   const sw=`const C='pm-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.pathname))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
 }
-
-// Fix iOS PWA height via CSS variable
-function setVH(){
-  let vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', vh + 'px');
-  document.body.style.height = window.innerHeight + 'px';
-}
-setVH();
-window.addEventListener('resize', setVH);
-window.addEventListener('orientationchange', () => setTimeout(setVH, 150));
 
 renderAll();
 renderSaves();
