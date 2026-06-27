@@ -23,17 +23,11 @@
   --header-h:52px;
 }
 
-html {
-  height: -webkit-fill-available;
-  height: 100%;
-}
+html { height: 100%; }
 body {
   font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
   display:flex; flex-direction:column;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
-  min-height: 100dvh;
-  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
   overflow:hidden;
   padding-top:var(--st);
   padding-bottom:var(--sb);
@@ -636,10 +630,21 @@ let tt;
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
 
 /* ── PWA ── */
+
 if('serviceWorker' in navigator){
   const sw=`const C='pm-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.pathname))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
 }
+
+// Fix iOS PWA height via CSS variable
+function setVH(){
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', vh + 'px');
+  document.body.style.height = window.innerHeight + 'px';
+}
+setVH();
+window.addEventListener('resize', setVH);
+window.addEventListener('orientationchange', () => setTimeout(setVH, 150));
 
 renderAll();
 renderSaves();
