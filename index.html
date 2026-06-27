@@ -10,17 +10,6 @@
 <meta name="theme-color" content="#0a0c14">
 <title>Pactometre Manresa</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>
-// iOS PWA height fix - ha d'anar ABANS del CSS
-(function(){
-  function fix(){
-    document.documentElement.style.setProperty('--real-vh', window.innerHeight + 'px');
-  }
-  fix();
-  window.addEventListener('resize', fix);
-  window.addEventListener('orientationchange', function(){ setTimeout(fix, 200); });
-})();
-</script>
 <style>
 *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 :root {
@@ -28,122 +17,96 @@
   --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.15);
   --text:#e8eaf0; --muted:#7c82a0; --accent:#4f8ef7; --gold:#f5c842; --abs:#22c55e;
   --r:12px; --rs:8px;
-  --st:env(safe-area-inset-top,0px);
-  --sb:env(safe-area-inset-bottom,0px);
+  --header-h:56px;
   --tab-h:60px;
-  --header-h:52px;
 }
 
-html { height: 100%; }
-body {
-  font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
-  display:flex; flex-direction:column;
-  height: 100vh;
-  height: var(--real-vh, 100vh);
-  overflow:hidden;
-  padding-top:var(--st);
-}
+html, body { margin:0; padding:0; background:#0a0c14; }
+body { font-family:'Inter',sans-serif; color:var(--text); }
 
-/* ── HEADER ── */
+/* HEADER — fixed a dalt */
 .app-header {
+  position:fixed; top:0; left:0; right:0; z-index:100;
   height:var(--header-h);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 1rem;
+  padding: env(safe-area-inset-top, 0px) 1rem 0;
+  height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  display:flex; align-items:flex-end; justify-content:space-between;
+  padding-bottom: 0.6rem;
+  background:rgba(10,12,20,.97);
   border-bottom:1px solid var(--border);
-  background:var(--bg);
-  flex-shrink:0;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
 }
 .h-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; letter-spacing:-.02em; }
 .h-title span { color:var(--accent); }
-.h-sub { font-size:.62rem; color:var(--muted); }
-.badge-abs { padding:3px 9px; border-radius:999px; font-size:.65rem; font-weight:600; border:1px solid rgba(34,197,94,.3); background:rgba(34,197,94,.1); color:var(--abs); white-space:nowrap; }
+.h-sub { font-size:.6rem; color:var(--muted); margin-top:1px; }
+.badge-abs { padding:3px 9px; border-radius:999px; font-size:.65rem; font-weight:600; border:1px solid rgba(34,197,94,.3); background:rgba(34,197,94,.1); color:var(--abs); white-space:nowrap; flex-shrink:0; }
 
-/* ── SCROLL AREA ── */
-.app-body {
-  flex:1;
-  overflow:hidden;
-  position:relative;
-  min-height:0;
-}
-.screen {
-  position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
-  padding:1rem 1rem 1rem;
-  display:flex; flex-direction:column; gap:.9rem;
-  opacity:0; pointer-events:none; transform:translateY(8px);
-  transition:opacity .18s, transform .18s;
-}
-.screen.active { opacity:1; pointer-events:all; transform:translateY(0); }
-
-/* La card de la sala s'expandeix per omplir l'espai restant */
-#s0 .card { flex:1; display:flex; flex-direction:column; min-height:0; }
-#s0 .sala-outer { flex:1; justify-content:center; }
-/* custom scrollbar */
-.screen::-webkit-scrollbar { width:3px; }
-.screen::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:99px; }
-
-/* ── TAB BAR (bottom) ── */
+/* TAB BAR — fixed a baix */
 .tab-bar {
-  height:calc(var(--tab-h) + var(--sb));
-  padding-bottom:var(--sb);
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+  height: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background:rgba(10,12,20,.97);
   border-top:1px solid var(--border);
   display:flex; align-items:stretch;
-  flex-shrink:0;
-  flex-grow:0;
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
 }
 .tab-btn {
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:3px; background:none; border:none; cursor:pointer;
-  color:var(--muted); font-size:.58rem; font-weight:600; font-family:inherit;
-  transition:color .15s; letter-spacing:.03em; text-transform:uppercase;
-  touch-action:manipulation;
+  color:var(--muted); font-size:.55rem; font-weight:600; font-family:inherit;
+  letter-spacing:.04em; text-transform:uppercase; touch-action:manipulation;
 }
-.tab-btn svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
+.tab-btn svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active svg { stroke:var(--accent); }
 
-/* ── CARDS ── */
+/* SCREENS — scroll normal, amb padding per header i tab-bar */
+.screen {
+  display:none;
+  flex-direction:column;
+  gap:.85rem;
+  padding: calc(var(--header-h) + env(safe-area-inset-top,0px) + 1rem) 1rem calc(var(--tab-h) + env(safe-area-inset-bottom,0px) + 1rem);
+  min-height: 100vh;
+}
+.screen.active { display:flex; }
+
+/* CARDS */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.85rem .95rem; }
 .card-title { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.6rem; }
 
-/* ── STATS ROW ── */
+/* STATS */
 .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:8px; text-align:center; }
 .stat-n { font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700; line-height:1; }
 .stat-l { font-size:.58rem; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
 .stat-card.hi .stat-n { color:var(--abs); }
 
-/* ── SALA ── */
-.sala-outer { display:flex; flex-direction:column; align-items:center; gap:7px; }
+/* SALA */
+.sala-outer { display:flex; flex-direction:column; align-items:center; gap:8px; }
 .alcalde-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; }
 .alcalde-lbl { font-size:.52rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
 .seat-alcalde {
-  width:34px; height:34px; border-radius:7px;
+  width:36px; height:36px; border-radius:8px;
   border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.04);
   cursor:pointer; transition:box-shadow .15s; position:relative; flex-shrink:0;
 }
 .seat-alcalde:active { box-shadow:0 0 0 3px rgba(245,200,66,.35); }
 .seat-alcalde.filled { border-color:rgba(0,0,0,.3); }
-
 .seats-visual { display:flex; align-items:flex-start; }
-.side-block { display:flex; gap:4px; }
-.aisle { width:22px; flex-shrink:0; }
-.col-seats { display:flex; flex-direction:column; gap:4px; }
-.seat {
-  width:28px; height:28px; border-radius:5px;
-  border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04);
-  flex-shrink:0;
-}
+.side-block { display:flex; gap:5px; }
+.aisle { width:24px; flex-shrink:0; }
+.col-seats { display:flex; flex-direction:column; gap:5px; }
+.seat { width:30px; height:30px; border-radius:6px; border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); flex-shrink:0; }
 .seat.filled { border-color:rgba(0,0,0,.25); }
-
-.sala-legend { display:flex; flex-wrap:wrap; gap:4px 9px; justify-content:center; margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--border); }
-.leg-item { display:flex; align-items:center; gap:4px; font-size:.63rem; color:var(--muted); }
+.sala-legend { display:flex; flex-wrap:wrap; gap:4px 10px; justify-content:center; margin-top:.65rem; padding-top:.65rem; border-top:1px solid var(--border); }
+.leg-item { display:flex; align-items:center; gap:4px; font-size:.65rem; color:var(--muted); }
 .leg-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
 
-/* Tie dropdown inline */
-.tie-inline { text-align:center; margin-top:3px; }
+/* Tie */
+.tie-inline { text-align:center; margin-top:4px; }
 .tie-lbl-inline { font-size:.58rem; color:var(--gold); font-weight:600; margin-bottom:3px; }
 .tie-sel {
   background:var(--surface2); border:1px solid rgba(245,200,66,.4); border-radius:var(--rs);
@@ -154,101 +117,60 @@ body {
   max-width:160px;
 }
 
-/* ── PARTITS ── */
+/* PARTITS */
 .pc { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:9px 10px; display:flex; align-items:center; gap:8px; }
 .cdot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
 .pi { flex:1; min-width:0; }
 .pn { font-size:.76rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .pf { font-size:.62rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sctrl { display:flex; align-items:center; gap:4px; flex-shrink:0; }
-.sbtn {
-  width:30px; height:30px; border-radius:7px;
-  border:1px solid var(--border2); background:var(--surface2); color:var(--text);
-  font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
-  touch-action:manipulation; transition:background .1s;
-}
+.sbtn { width:32px; height:32px; border-radius:7px; border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation; }
 .sbtn:active { background:rgba(255,255,255,.15); }
-.snum { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:700; min-width:18px; text-align:center; }
-.delbtn {
-  width:30px; height:30px; border-radius:7px;
-  border:1px solid rgba(248,113,113,.2); background:transparent; color:rgba(248,113,113,.45);
-  cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
-  touch-action:manipulation; transition:background .1s, color .1s;
-}
+.snum { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:700; min-width:20px; text-align:center; }
+.delbtn { width:32px; height:32px; border-radius:7px; border:1px solid rgba(248,113,113,.2); background:transparent; color:rgba(248,113,113,.45); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; touch-action:manipulation; }
 .delbtn:active { background:rgba(248,113,113,.15); color:#f87171; }
 .delbtn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 
-/* Form afegir */
+/* Form */
 .frow { display:flex; gap:6px; margin-bottom:7px; }
-.frow input[type=text] {
-  flex:1; min-width:0; background:var(--surface2); border:1px solid var(--border2);
-  border-radius:var(--rs); padding:8px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none;
-}
+.frow input[type=text] { flex:1; min-width:0; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--rs); padding:8px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none; }
 .frow input[type=text]:focus { border-color:var(--accent); }
-.frow input[type=color] { width:38px; height:38px; border:1px solid var(--border2); border-radius:var(--rs); background:var(--surface2); cursor:pointer; padding:2px; flex-shrink:0; }
-.btnadd {
-  width:100%; padding:10px; background:rgba(79,142,247,.12); border:1px solid rgba(79,142,247,.25);
-  border-radius:var(--rs); color:var(--accent); font-size:.8rem; font-weight:600; cursor:pointer; font-family:inherit;
-  touch-action:manipulation;
-}
+.frow input[type=color] { width:40px; height:40px; border:1px solid var(--border2); border-radius:var(--rs); background:var(--surface2); cursor:pointer; padding:2px; flex-shrink:0; }
+.btnadd { width:100%; padding:10px; background:rgba(79,142,247,.12); border:1px solid rgba(79,142,247,.25); border-radius:var(--rs); color:var(--accent); font-size:.8rem; font-weight:600; cursor:pointer; font-family:inherit; touch-action:manipulation; }
 .btnadd:active { background:rgba(79,142,247,.22); }
 .errmsg { font-size:.7rem; color:#f87171; margin-top:4px; display:none; }
 
-/* ── PACTE ── */
+/* PACTE */
 .alcalde-row { display:flex; align-items:center; gap:9px; }
 .alc-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
-.alc-name { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:700; }
-
-.pacte-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); }
+.alc-name { font-family:'Space Grotesk',sans-serif; font-size:.9rem; font-weight:700; }
+.pacte-item { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); }
 .pacte-item:last-child { border-bottom:none; }
-.pchk {
-  width:20px; height:20px; border-radius:5px;
-  border:1.5px solid var(--border2); background:transparent;
-  cursor:pointer; appearance:none; position:relative; flex-shrink:0; touch-action:manipulation;
-}
-.pchk:checked::after {
-  content:''; position:absolute; top:3px; left:5px;
-  width:6px; height:9px;
-  border:2px solid #fff; border-top:none; border-left:none; transform:rotate(40deg);
-}
+.pchk { width:20px; height:20px; border-radius:5px; border:1.5px solid var(--border2); background:transparent; cursor:pointer; appearance:none; position:relative; flex-shrink:0; touch-action:manipulation; }
+.pchk:checked::after { content:''; position:absolute; top:3px; left:5px; width:6px; height:9px; border:2px solid #fff; border-top:none; border-left:none; transform:rotate(40deg); }
 .pname { font-size:.8rem; flex:1; cursor:pointer; }
 .pseats { font-size:.78rem; font-weight:700; color:var(--muted); }
 .pacte-result { margin-top:.65rem; border-top:1px solid var(--border); padding-top:.65rem; display:flex; justify-content:space-between; align-items:center; }
 .ptotal { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; }
 .pstatus { font-size:.7rem; font-weight:600; padding:4px 10px; border-radius:999px; }
 .s-yes { background:rgba(34,197,94,.14); color:var(--abs); }
-.s-no  { background:rgba(239,68,68,.1); color:#f87171; }
+.s-no { background:rgba(239,68,68,.1); color:#f87171; }
 .pb-wrap { height:5px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; margin-top:5px; }
 .pb-fill { height:100%; border-radius:99px; transition:width .3s, background .3s; }
 
-/* ── GUARDATS ── */
+/* GUARDATS */
 .save-name-row { display:flex; gap:7px; }
-.save-name-row input {
-  flex:1; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--rs);
-  padding:9px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none;
-}
+.save-name-row input { flex:1; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--rs); padding:9px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none; }
 .save-name-row input:focus { border-color:var(--abs); }
-.save-name-row button {
-  padding:9px 14px; border-radius:var(--rs); border:1px solid rgba(34,197,94,.3);
-  background:rgba(34,197,94,.1); color:var(--abs); font-size:.78rem; font-weight:600;
-  cursor:pointer; font-family:inherit; touch-action:manipulation; white-space:nowrap;
-}
+.save-name-row button { padding:9px 14px; border-radius:var(--rs); border:1px solid rgba(34,197,94,.3); background:rgba(34,197,94,.1); color:var(--abs); font-size:.78rem; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; touch-action:manipulation; }
 .save-name-row button:active { background:rgba(34,197,94,.2); }
-
 .save-slots { display:flex; flex-direction:column; gap:6px; }
-.save-slot {
-  display:flex; align-items:center; gap:9px; padding:9px 10px;
-  border-radius:var(--rs); border:1px solid var(--border); background:var(--surface2);
-}
+.save-slot { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:var(--rs); border:1px solid var(--border); background:var(--surface2); }
 .save-slot.active { border-color:var(--accent); background:rgba(79,142,247,.07); }
 .slot-name { font-size:.76rem; font-weight:600; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .slot-meta { font-size:.6rem; color:var(--muted); margin-top:1px; }
 .slot-acts { display:flex; gap:4px; flex-shrink:0; }
-.slbtn {
-  padding:4px 8px; border-radius:5px; border:1px solid var(--border2);
-  background:transparent; font-size:.62rem; font-weight:600; cursor:pointer; font-family:inherit;
-  touch-action:manipulation; white-space:nowrap;
-}
+.slbtn { padding:5px 8px; border-radius:5px; border:1px solid var(--border2); background:transparent; font-size:.62rem; font-weight:600; cursor:pointer; font-family:inherit; touch-action:manipulation; white-space:nowrap; }
 .slbtn.ld { color:var(--accent); border-color:rgba(79,142,247,.3); }
 .slbtn.ld:active { background:rgba(79,142,247,.12); }
 .slbtn.ow { color:var(--abs); border-color:rgba(34,197,94,.3); }
@@ -257,19 +179,20 @@ body {
 .slbtn.dl:active { background:rgba(248,113,113,.1); }
 .no-saves { font-size:.72rem; color:var(--muted); text-align:center; padding:.5rem 0; }
 
-/* ── TOAST ── */
+/* TOAST */
 .toast {
-  position:fixed; bottom:calc(var(--tab-h) + var(--sb) + 12px); left:50%; transform:translateX(-50%) translateY(10px);
+  position:fixed; bottom:calc(var(--tab-h) + env(safe-area-inset-bottom,0px) + 12px);
+  left:50%; transform:translateX(-50%) translateY(10px);
   background:#1e2235; border:1px solid var(--border2); color:var(--text);
   padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600;
-  opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap;
+  opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:200; white-space:nowrap;
 }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- HEADER fix -->
 <div class="app-header">
   <div>
     <div class="h-title">Pactometre <span>Manresa</span></div>
@@ -278,122 +201,98 @@ body {
   <div class="badge-abs">Majoria: 13</div>
 </div>
 
-<!-- SCREENS -->
-<div class="app-body">
-
-  <!-- SCREEN 0: SALA -->
-  <div class="screen active" id="s0">
-
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-n" id="stat-ass">25</div>
-        <div class="stat-l">Total</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-n" id="stat-ll">0</div>
-        <div class="stat-l">Lliures</div>
-      </div>
-      <div class="stat-card hi">
-        <div class="stat-n">13</div>
-        <div class="stat-l">Majoria</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Sala de plens</div>
-      <div class="sala-outer">
-        <div class="alcalde-wrap">
-          <div class="alcalde-lbl">Alcalde / Alcaldessa</div>
-          <div id="seat-alcalde" class="seat-alcalde"></div>
-          <div id="tie-zone" style="display:none" class="tie-inline">
-            <div class="tie-lbl-inline">Empat — tria el partit:</div>
-            <select class="tie-sel" id="tie-select" onchange="onTieSelect(this.value)">
-              <option value="">-- Selecciona --</option>
-            </select>
-          </div>
-        </div>
-        <div class="seats-visual">
-          <div class="side-block">
-            <div class="col-seats" id="col-le"></div>
-            <div class="col-seats" id="col-li"></div>
-          </div>
-          <div class="aisle"></div>
-          <div class="side-block">
-            <div class="col-seats" id="col-ri"></div>
-            <div class="col-seats" id="col-re"></div>
-          </div>
+<!-- SCREEN 0: SALA -->
+<div class="screen active" id="s0">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-n" id="stat-ass">25</div><div class="stat-l">Total</div></div>
+    <div class="stat-card"><div class="stat-n" id="stat-ll">0</div><div class="stat-l">Lliures</div></div>
+    <div class="stat-card hi"><div class="stat-n">13</div><div class="stat-l">Majoria</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Sala de plens</div>
+    <div class="sala-outer">
+      <div class="alcalde-wrap">
+        <div class="alcalde-lbl">Alcalde / Alcaldessa</div>
+        <div id="seat-alcalde" class="seat-alcalde"></div>
+        <div id="tie-zone" style="display:none" class="tie-inline">
+          <div class="tie-lbl-inline">Empat — tria el partit:</div>
+          <select class="tie-sel" id="tie-select" onchange="onTieSelect(this.value)">
+            <option value="">-- Selecciona --</option>
+          </select>
         </div>
       </div>
-      <div class="sala-legend" id="sala-legend"></div>
-    </div>
-
-  </div>
-
-  <!-- SCREEN 1: PARTITS -->
-  <div class="screen" id="s1">
-    <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
-
-    <div class="card">
-      <div class="card-title">Afegir nou partit</div>
-      <div class="frow">
-        <input type="text" id="new-nom" placeholder="Sigles" maxlength="12">
-        <input type="text" id="new-full" placeholder="Nom complet" maxlength="50">
-        <input type="color" id="new-color" value="#a855f7">
-      </div>
-      <button class="btnadd" onclick="afegirPartit()">Afegir al consistori</button>
-      <div class="errmsg" id="errmsg">Cal indicar les sigles del partit.</div>
-    </div>
-  </div>
-
-  <!-- SCREEN 2: PACTES -->
-  <div class="screen" id="s2">
-
-    <div class="card">
-      <div class="card-title">Alcalde / Alcaldessa</div>
-      <div class="alcalde-row">
-        <div class="alc-dot" id="alc-dot" style="background:rgba(255,255,255,.1)"></div>
-        <div class="alc-name" id="alc-name" style="color:var(--muted)">Sense designar</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Simulador de pactes</div>
-      <p style="font-size:.7rem;color:var(--muted);margin-bottom:.6rem;">Marca els partits del govern potencial:</p>
-      <div id="pacte-list"></div>
-      <div class="pacte-result">
-        <div>
-          <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Escons del pacte</div>
-          <div class="ptotal" id="ptotal">0 / 25</div>
-          <div class="pb-wrap"><div class="pb-fill" id="pb" style="width:0%"></div></div>
+      <div class="seats-visual">
+        <div class="side-block">
+          <div class="col-seats" id="col-le"></div>
+          <div class="col-seats" id="col-li"></div>
         </div>
-        <div class="pstatus" id="pstatus" style="display:none"></div>
+        <div class="aisle"></div>
+        <div class="side-block">
+          <div class="col-seats" id="col-ri"></div>
+          <div class="col-seats" id="col-re"></div>
+        </div>
       </div>
     </div>
-
+    <div class="sala-legend" id="sala-legend"></div>
   </div>
+</div>
 
-  <!-- SCREEN 3: GUARDATS -->
-  <div class="screen" id="s3">
+<!-- SCREEN 1: PARTITS -->
+<div class="screen" id="s1">
+  <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
+  <div class="card">
+    <div class="card-title">Afegir nou partit</div>
+    <div class="frow">
+      <input type="text" id="new-nom" placeholder="Sigles" maxlength="12">
+      <input type="text" id="new-full" placeholder="Nom complet" maxlength="50">
+      <input type="color" id="new-color" value="#a855f7">
+    </div>
+    <button class="btnadd" onclick="afegirPartit()">Afegir al consistori</button>
+    <div class="errmsg" id="errmsg">Cal indicar les sigles del partit.</div>
+  </div>
+</div>
 
-    <div class="card">
-      <div class="card-title">Desar escenari actual</div>
-      <div class="save-name-row">
-        <input type="text" id="save-name" placeholder="Nom de l'escenari..." maxlength="30">
-        <button onclick="saveNew()">Desar</button>
+<!-- SCREEN 2: PACTES -->
+<div class="screen" id="s2">
+  <div class="card">
+    <div class="card-title">Alcalde / Alcaldessa</div>
+    <div class="alcalde-row">
+      <div class="alc-dot" id="alc-dot" style="background:rgba(255,255,255,.1)"></div>
+      <div class="alc-name" id="alc-name" style="color:var(--muted)">Sense designar</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Simulador de pactes</div>
+    <p style="font-size:.7rem;color:var(--muted);margin-bottom:.6rem;">Marca els partits del govern potencial:</p>
+    <div id="pacte-list"></div>
+    <div class="pacte-result">
+      <div>
+        <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Escons del pacte</div>
+        <div class="ptotal" id="ptotal">0 / 25</div>
+        <div class="pb-wrap"><div class="pb-fill" id="pb" style="width:0%"></div></div>
       </div>
+      <div class="pstatus" id="pstatus" style="display:none"></div>
     </div>
-
-    <div class="card">
-      <div class="card-title">Escenaris desats</div>
-      <div class="save-slots" id="save-slots"></div>
-      <div class="no-saves" id="no-saves-msg">No hi ha cap escenari desat.</div>
-    </div>
-
   </div>
+</div>
 
-</div><!-- /app-body -->
+<!-- SCREEN 3: GUARDATS -->
+<div class="screen" id="s3">
+  <div class="card">
+    <div class="card-title">Desar escenari actual</div>
+    <div class="save-name-row">
+      <input type="text" id="save-name" placeholder="Nom de l'escenari..." maxlength="30">
+      <button onclick="saveNew()">Desar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Escenaris desats</div>
+    <div class="save-slots" id="save-slots"></div>
+    <div class="no-saves" id="no-saves-msg">No hi ha cap escenari desat.</div>
+  </div>
+</div>
 
-<!-- TAB BAR -->
+<!-- TAB BAR fix -->
 <nav class="tab-bar">
   <button class="tab-btn active" id="tab0" onclick="setTab(0)">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
@@ -417,7 +316,6 @@ body {
 
 <script>
 const TOTAL=25, ABS=13, SAVE_KEY='pactometre_v2';
-
 let partits=[
   {id:'ERC',   nom:'ERC',         full:'Esquerra Republicana de Catalunya',      color:'#F59E0B',escons:7},
   {id:'JUNTS', nom:'Junts',        full:'Junts per Manresa',                      color:'#38BDF8',escons:6},
@@ -431,10 +329,8 @@ let partits=[
   {id:'PP',    nom:'PP',           full:'Partit Popular',                        color:'#1D4ED8',escons:0},
   {id:'SUMAR', nom:'Sumar',        full:'Sumar / Comuns Podem',                  color:'#DB2777',escons:0},
 ];
-
 let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, curTab=0;
 
-/* ── TABS ── */
 function setTab(i){
   if(curTab===i) return;
   document.querySelectorAll('.screen').forEach((s,j)=>s.classList.toggle('active',j===i));
@@ -443,11 +339,9 @@ function setTab(i){
   if(i===3) renderSaves();
 }
 
-/* ── HELPERS ── */
 function byId(id){ return partits.find(p=>p.id===id); }
 function totalAss(){ return partits.reduce((s,p)=>s+p.escons,0); }
 
-/* ── ALCALDE LOGIC ── */
 function computeAlcalde(){
   const act=partits.filter(p=>p.escons>0);
   if(!act.length) return {alcaldeId:null,tie:false,candidates:[]};
@@ -462,50 +356,29 @@ function buildSeats(){
   const {alcaldeId,tie}=computeAlcalde();
   let pool=partits.map(p=>({...p,n:p.escons}));
   let alcSeat=null;
-  if(alcaldeId){
-    const ap=pool.find(p=>p.id===alcaldeId);
-    if(ap&&ap.n>0){ alcSeat={id:ap.id,color:ap.color,nom:ap.nom}; ap.n--; }
-  }
+  if(alcaldeId){ const ap=pool.find(p=>p.id===alcaldeId); if(ap&&ap.n>0){ alcSeat={id:ap.id,color:ap.color,nom:ap.nom}; ap.n--; } }
   let flat=[];
   pool.forEach(p=>{ for(let i=0;i<p.n;i++) flat.push({id:p.id,color:p.color,nom:p.nom}); });
   while(flat.length<24) flat.push(null);
   return {alcSeat,seats24:flat.slice(0,24),tie,alcaldeId};
 }
 
-/* ── RENDERS ── */
 function renderSala(){
   const {alcSeat,seats24,tie}=buildSeats();
   const mk=d=>{ const e=document.createElement('div'); e.className='seat'+(d?' filled':''); if(d){e.style.background=d.color;e.style.borderColor='rgba(0,0,0,.28)';} return e; };
-  (['col-le','col-li','col-ri','col-re']).forEach((id,ci)=>{
-    const c=document.getElementById(id); c.innerHTML='';
-    seats24.slice(ci*6,ci*6+6).forEach(d=>c.appendChild(mk(d)));
-  });
+  ['col-le','col-li','col-ri','col-re'].forEach((id,ci)=>{ const c=document.getElementById(id); c.innerHTML=''; seats24.slice(ci*6,ci*6+6).forEach(d=>c.appendChild(mk(d))); });
   const alcEl=document.getElementById('seat-alcalde');
   alcEl.className='seat-alcalde'; alcEl.removeAttribute('style');
   if(alcSeat){ alcEl.classList.add('filled'); alcEl.style.background=alcSeat.color; alcEl.style.borderColor='rgba(0,0,0,.3)'; }
   else if(tie){ alcEl.style.background='rgba(245,200,66,.12)'; alcEl.style.borderColor='rgba(245,200,66,.4)'; alcEl.style.borderWidth='2px'; }
-
   const tz=document.getElementById('tie-zone'), ts=document.getElementById('tie-select');
-  if(tie&&(!alcaldeManualId||tieOpen)){
-    tz.style.display='block';
-    ts.innerHTML='<option value="">-- Selecciona --</option>';
-    computeAlcalde().candidates.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.nom+' ('+p.escons+')'; ts.appendChild(o); });
-  } else { tz.style.display='none'; }
-
+  if(tie&&(!alcaldeManualId||tieOpen)){ tz.style.display='block'; ts.innerHTML='<option value="">-- Selecciona --</option>'; computeAlcalde().candidates.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.nom+' ('+p.escons+')'; ts.appendChild(o); }); }
+  else { tz.style.display='none'; }
   const leg=document.getElementById('sala-legend'); leg.innerHTML='';
-  partits.filter(p=>p.escons>0).forEach(p=>{
-    const it=document.createElement('div'); it.className='leg-item';
-    const d=document.createElement('div'); d.className='leg-dot'; d.style.background=p.color;
-    const l=document.createElement('span'); l.textContent=p.nom+' ('+p.escons+')';
-    it.appendChild(d); it.appendChild(l); leg.appendChild(it);
-  });
+  partits.filter(p=>p.escons>0).forEach(p=>{ const it=document.createElement('div'); it.className='leg-item'; const d=document.createElement('div'); d.className='leg-dot'; d.style.background=p.color; const l=document.createElement('span'); l.textContent=p.nom+' ('+p.escons+')'; it.appendChild(d); it.appendChild(l); leg.appendChild(it); });
 }
 
-function renderStats(){
-  const t=totalAss();
-  document.getElementById('stat-ass').textContent=t;
-  document.getElementById('stat-ll').textContent=Math.max(0,TOTAL-t);
-}
+function renderStats(){ const t=totalAss(); document.getElementById('stat-ass').textContent=t; document.getElementById('stat-ll').textContent=Math.max(0,TOTAL-t); }
 
 function renderAlcalde(){
   const {alcaldeId,tie}=computeAlcalde();
@@ -561,7 +434,6 @@ function updatePacte(){
 
 function renderAll(){ renderStats(); renderPartits(); renderAlcalde(); renderSala(); renderPacte(); }
 
-/* ── ACTIONS ── */
 function changeEscons(id,delta){
   const p=byId(id); if(!p) return;
   const nou=p.escons+delta;
@@ -569,10 +441,7 @@ function changeEscons(id,delta){
   p.escons=nou; alcaldeManualId=null; tieOpen=false; renderAll();
 }
 function onTieSelect(val){ if(val){ alcaldeManualId=val; tieOpen=false; } renderAll(); }
-
-document.getElementById('seat-alcalde').addEventListener('click',()=>{
-  const {tie}=computeAlcalde(); if(tie){ tieOpen=!tieOpen; renderSala(); }
-});
+document.getElementById('seat-alcalde').addEventListener('click',()=>{ const {tie}=computeAlcalde(); if(tie){ tieOpen=!tieOpen; renderSala(); } });
 
 function afegirPartit(){
   const nEl=document.getElementById('new-nom'), fEl=document.getElementById('new-full'), cEl=document.getElementById('new-color'), err=document.getElementById('errmsg');
@@ -587,7 +456,6 @@ function eliminarPartit(id){
   delete pacteChecked[id]; partits.splice(idx,1); renderAll();
 }
 
-/* ── SAVES ── */
 function getSaves(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY))||[]; }catch(e){ return []; } }
 function setSaves(a){ localStorage.setItem(SAVE_KEY,JSON.stringify(a)); }
 function getState(){ return {partits:partits.map(p=>({...p})),alcaldeManualId,pacteChecked:{...pacteChecked}}; }
@@ -636,14 +504,11 @@ function renderSaves(){
   });
 }
 
-/* ── TOAST ── */
 let tt;
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
 
-/* ── PWA ── */
-
 if('serviceWorker' in navigator){
-  const sw=`const C='pm-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.pathname))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  const sw=`const C='pm-v2';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.pathname))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
 }
 
