@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pactometre">
+<meta name="theme-color" content="#0a0c14">
+<title>Pactometre Manresa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0a0c14; --surface:#111422; --surface2:#181c2e;
+  --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.15);
+  --text:#e8eaf0; --muted:#7c82a0; --accent:#4f8ef7; --gold:#f5c842; --abs:#22c55e;
+  --r:12px; --rs:8px;
+  --st:env(safe-area-inset-top,0px);
+  --sb:env(safe-area-inset-bottom,0px);
+  --tab-h:60px;
+  --header-h:52px;
+}
+
+html {
+  height: -webkit-fill-available;
+  height: 100%;
+}
+body {
+  font-family:'Inter',sans-serif; background:var(--bg); color:var(--text);
+  display:flex; flex-direction:column;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh;
+  height: 100%;
+  overflow:hidden;
+  padding-top:var(--st);
+  padding-bottom:var(--sb);
+}
+
+/* ── HEADER ── */
+.app-header {
+  height:var(--header-h);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 1rem;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  flex-shrink:0;
+}
+.h-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; letter-spacing:-.02em; }
+.h-title span { color:var(--accent); }
+.h-sub { font-size:.62rem; color:var(--muted); }
+.badge-abs { padding:3px 9px; border-radius:999px; font-size:.65rem; font-weight:600; border:1px solid rgba(34,197,94,.3); background:rgba(34,197,94,.1); color:var(--abs); white-space:nowrap; }
+
+/* ── SCROLL AREA ── */
+.app-body {
+  flex:1;
+  overflow:hidden;
+  position:relative;
+  min-height:0;
+}
+.screen {
+  position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+  padding:1rem 1rem 1.5rem;
+  display:flex; flex-direction:column; gap:.9rem;
+  opacity:0; pointer-events:none; transform:translateY(8px);
+  transition:opacity .18s, transform .18s;
+}
+.screen.active { opacity:1; pointer-events:all; transform:translateY(0); }
+/* custom scrollbar */
+.screen::-webkit-scrollbar { width:3px; }
+.screen::-webkit-scrollbar-thumb { background:rgba(255,255,255,.1); border-radius:99px; }
+
+/* ── TAB BAR (bottom) ── */
+.tab-bar {
+  height:calc(var(--tab-h) + var(--sb));
+  padding-bottom:var(--sb);
+  background:rgba(10,12,20,.97);
+  border-top:1px solid var(--border);
+  display:flex; align-items:stretch;
+  flex-shrink:0;
+  flex-grow:0;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.tab-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px; background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:.58rem; font-weight:600; font-family:inherit;
+  transition:color .15s; letter-spacing:.03em; text-transform:uppercase;
+  touch-action:manipulation;
+}
+.tab-btn svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:stroke .15s; }
+.tab-btn.active { color:var(--accent); }
+.tab-btn.active svg { stroke:var(--accent); }
+
+/* ── CARDS ── */
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.85rem .95rem; }
+.card-title { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.6rem; }
+
+/* ── STATS ROW ── */
+.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:8px; text-align:center; }
+.stat-n { font-family:'Space Grotesk',sans-serif; font-size:1.4rem; font-weight:700; line-height:1; }
+.stat-l { font-size:.58rem; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
+.stat-card.hi .stat-n { color:var(--abs); }
+
+/* ── SALA ── */
+.sala-outer { display:flex; flex-direction:column; align-items:center; gap:7px; }
+.alcalde-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.alcalde-lbl { font-size:.52rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+.seat-alcalde {
+  width:34px; height:34px; border-radius:7px;
+  border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.04);
+  cursor:pointer; transition:box-shadow .15s; position:relative; flex-shrink:0;
+}
+.seat-alcalde:active { box-shadow:0 0 0 3px rgba(245,200,66,.35); }
+.seat-alcalde.filled { border-color:rgba(0,0,0,.3); }
+
+.seats-visual { display:flex; align-items:flex-start; }
+.side-block { display:flex; gap:4px; }
+.aisle { width:22px; flex-shrink:0; }
+.col-seats { display:flex; flex-direction:column; gap:4px; }
+.seat {
+  width:28px; height:28px; border-radius:5px;
+  border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04);
+  flex-shrink:0;
+}
+.seat.filled { border-color:rgba(0,0,0,.25); }
+
+.sala-legend { display:flex; flex-wrap:wrap; gap:4px 9px; justify-content:center; margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--border); }
+.leg-item { display:flex; align-items:center; gap:4px; font-size:.63rem; color:var(--muted); }
+.leg-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+
+/* Tie dropdown inline */
+.tie-inline { text-align:center; margin-top:3px; }
+.tie-lbl-inline { font-size:.58rem; color:var(--gold); font-weight:600; margin-bottom:3px; }
+.tie-sel {
+  background:var(--surface2); border:1px solid rgba(245,200,66,.4); border-radius:var(--rs);
+  color:var(--text); font-size:.7rem; font-weight:600; font-family:inherit;
+  padding:5px 22px 5px 8px; cursor:pointer; outline:none; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23f5c842' d='M5 7L1 2h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 7px center; background-color:var(--surface2);
+  max-width:160px;
+}
+
+/* ── PARTITS ── */
+.pc { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:9px 10px; display:flex; align-items:center; gap:8px; }
+.cdot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+.pi { flex:1; min-width:0; }
+.pn { font-size:.76rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pf { font-size:.62rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sctrl { display:flex; align-items:center; gap:4px; flex-shrink:0; }
+.sbtn {
+  width:30px; height:30px; border-radius:7px;
+  border:1px solid var(--border2); background:var(--surface2); color:var(--text);
+  font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  touch-action:manipulation; transition:background .1s;
+}
+.sbtn:active { background:rgba(255,255,255,.15); }
+.snum { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:700; min-width:18px; text-align:center; }
+.delbtn {
+  width:30px; height:30px; border-radius:7px;
+  border:1px solid rgba(248,113,113,.2); background:transparent; color:rgba(248,113,113,.45);
+  cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;
+  touch-action:manipulation; transition:background .1s, color .1s;
+}
+.delbtn:active { background:rgba(248,113,113,.15); color:#f87171; }
+.delbtn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+
+/* Form afegir */
+.frow { display:flex; gap:6px; margin-bottom:7px; }
+.frow input[type=text] {
+  flex:1; min-width:0; background:var(--surface2); border:1px solid var(--border2);
+  border-radius:var(--rs); padding:8px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none;
+}
+.frow input[type=text]:focus { border-color:var(--accent); }
+.frow input[type=color] { width:38px; height:38px; border:1px solid var(--border2); border-radius:var(--rs); background:var(--surface2); cursor:pointer; padding:2px; flex-shrink:0; }
+.btnadd {
+  width:100%; padding:10px; background:rgba(79,142,247,.12); border:1px solid rgba(79,142,247,.25);
+  border-radius:var(--rs); color:var(--accent); font-size:.8rem; font-weight:600; cursor:pointer; font-family:inherit;
+  touch-action:manipulation;
+}
+.btnadd:active { background:rgba(79,142,247,.22); }
+.errmsg { font-size:.7rem; color:#f87171; margin-top:4px; display:none; }
+
+/* ── PACTE ── */
+.alcalde-row { display:flex; align-items:center; gap:9px; }
+.alc-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
+.alc-name { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:700; }
+
+.pacte-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); }
+.pacte-item:last-child { border-bottom:none; }
+.pchk {
+  width:20px; height:20px; border-radius:5px;
+  border:1.5px solid var(--border2); background:transparent;
+  cursor:pointer; appearance:none; position:relative; flex-shrink:0; touch-action:manipulation;
+}
+.pchk:checked::after {
+  content:''; position:absolute; top:3px; left:5px;
+  width:6px; height:9px;
+  border:2px solid #fff; border-top:none; border-left:none; transform:rotate(40deg);
+}
+.pname { font-size:.8rem; flex:1; cursor:pointer; }
+.pseats { font-size:.78rem; font-weight:700; color:var(--muted); }
+.pacte-result { margin-top:.65rem; border-top:1px solid var(--border); padding-top:.65rem; display:flex; justify-content:space-between; align-items:center; }
+.ptotal { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; }
+.pstatus { font-size:.7rem; font-weight:600; padding:4px 10px; border-radius:999px; }
+.s-yes { background:rgba(34,197,94,.14); color:var(--abs); }
+.s-no  { background:rgba(239,68,68,.1); color:#f87171; }
+.pb-wrap { height:5px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; margin-top:5px; }
+.pb-fill { height:100%; border-radius:99px; transition:width .3s, background .3s; }
+
+/* ── GUARDATS ── */
+.save-name-row { display:flex; gap:7px; }
+.save-name-row input {
+  flex:1; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--rs);
+  padding:9px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none;
+}
+.save-name-row input:focus { border-color:var(--abs); }
+.save-name-row button {
+  padding:9px 14px; border-radius:var(--rs); border:1px solid rgba(34,197,94,.3);
+  background:rgba(34,197,94,.1); color:var(--abs); font-size:.78rem; font-weight:600;
+  cursor:pointer; font-family:inherit; touch-action:manipulation; white-space:nowrap;
+}
+.save-name-row button:active { background:rgba(34,197,94,.2); }
+
+.save-slots { display:flex; flex-direction:column; gap:6px; }
+.save-slot {
+  display:flex; align-items:center; gap:9px; padding:9px 10px;
+  border-radius:var(--rs); border:1px solid var(--border); background:var(--surface2);
+}
+.save-slot.active { border-color:var(--accent); background:rgba(79,142,247,.07); }
+.slot-name { font-size:.76rem; font-weight:600; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.slot-meta { font-size:.6rem; color:var(--muted); margin-top:1px; }
+.slot-acts { display:flex; gap:4px; flex-shrink:0; }
+.slbtn {
+  padding:4px 8px; border-radius:5px; border:1px solid var(--border2);
+  background:transparent; font-size:.62rem; font-weight:600; cursor:pointer; font-family:inherit;
+  touch-action:manipulation; white-space:nowrap;
+}
+.slbtn.ld { color:var(--accent); border-color:rgba(79,142,247,.3); }
+.slbtn.ld:active { background:rgba(79,142,247,.12); }
+.slbtn.ow { color:var(--abs); border-color:rgba(34,197,94,.3); }
+.slbtn.ow:active { background:rgba(34,197,94,.1); }
+.slbtn.dl { color:#f87171; border-color:rgba(248,113,113,.25); }
+.slbtn.dl:active { background:rgba(248,113,113,.1); }
+.no-saves { font-size:.72rem; color:var(--muted); text-align:center; padding:.5rem 0; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:calc(var(--tab-h) + var(--sb) + 12px); left:50%; transform:translateX(-50%) translateY(10px);
+  background:#1e2235; border:1px solid var(--border2); color:var(--text);
+  padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600;
+  opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div>
+    <div class="h-title">Pactometre <span>Manresa</span></div>
+    <div class="h-sub">25 regidors · Municipals 2027</div>
+  </div>
+  <div class="badge-abs">Majoria: 13</div>
+</div>
+
+<!-- SCREENS -->
+<div class="app-body">
+
+  <!-- SCREEN 0: SALA -->
+  <div class="screen active" id="s0">
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-n" id="stat-ass">25</div>
+        <div class="stat-l">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n" id="stat-ll">0</div>
+        <div class="stat-l">Lliures</div>
+      </div>
+      <div class="stat-card hi">
+        <div class="stat-n">13</div>
+        <div class="stat-l">Majoria</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Sala de plens</div>
+      <div class="sala-outer">
+        <div class="alcalde-wrap">
+          <div class="alcalde-lbl">Alcalde / Alcaldessa</div>
+          <div id="seat-alcalde" class="seat-alcalde"></div>
+          <div id="tie-zone" style="display:none" class="tie-inline">
+            <div class="tie-lbl-inline">Empat — tria el partit:</div>
+            <select class="tie-sel" id="tie-select" onchange="onTieSelect(this.value)">
+              <option value="">-- Selecciona --</option>
+            </select>
+          </div>
+        </div>
+        <div class="seats-visual">
+          <div class="side-block">
+            <div class="col-seats" id="col-le"></div>
+            <div class="col-seats" id="col-li"></div>
+          </div>
+          <div class="aisle"></div>
+          <div class="side-block">
+            <div class="col-seats" id="col-ri"></div>
+            <div class="col-seats" id="col-re"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sala-legend" id="sala-legend"></div>
+    </div>
+
+  </div>
+
+  <!-- SCREEN 1: PARTITS -->
+  <div class="screen" id="s1">
+    <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
+
+    <div class="card">
+      <div class="card-title">Afegir nou partit</div>
+      <div class="frow">
+        <input type="text" id="new-nom" placeholder="Sigles" maxlength="12">
+        <input type="text" id="new-full" placeholder="Nom complet" maxlength="50">
+        <input type="color" id="new-color" value="#a855f7">
+      </div>
+      <button class="btnadd" onclick="afegirPartit()">Afegir al consistori</button>
+      <div class="errmsg" id="errmsg">Cal indicar les sigles del partit.</div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: PACTES -->
+  <div class="screen" id="s2">
+
+    <div class="card">
+      <div class="card-title">Alcalde / Alcaldessa</div>
+      <div class="alcalde-row">
+        <div class="alc-dot" id="alc-dot" style="background:rgba(255,255,255,.1)"></div>
+        <div class="alc-name" id="alc-name" style="color:var(--muted)">Sense designar</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Simulador de pactes</div>
+      <p style="font-size:.7rem;color:var(--muted);margin-bottom:.6rem;">Marca els partits del govern potencial:</p>
+      <div id="pacte-list"></div>
+      <div class="pacte-result">
+        <div>
+          <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Escons del pacte</div>
+          <div class="ptotal" id="ptotal">0 / 25</div>
+          <div class="pb-wrap"><div class="pb-fill" id="pb" style="width:0%"></div></div>
+        </div>
+        <div class="pstatus" id="pstatus" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCREEN 3: GUARDATS -->
+  <div class="screen" id="s3">
+
+    <div class="card">
+      <div class="card-title">Desar escenari actual</div>
+      <div class="save-name-row">
+        <input type="text" id="save-name" placeholder="Nom de l'escenari..." maxlength="30">
+        <button onclick="saveNew()">Desar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Escenaris desats</div>
+      <div class="save-slots" id="save-slots"></div>
+      <div class="no-saves" id="no-saves-msg">No hi ha cap escenari desat.</div>
+    </div>
+
+  </div>
+
+</div><!-- /app-body -->
+
+<!-- TAB BAR -->
+<nav class="tab-bar">
+  <button class="tab-btn active" id="tab0" onclick="setTab(0)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+    Sala
+  </button>
+  <button class="tab-btn" id="tab1" onclick="setTab(1)">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
+    Partits
+  </button>
+  <button class="tab-btn" id="tab2" onclick="setTab(2)">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    Pactes
+  </button>
+  <button class="tab-btn" id="tab3" onclick="setTab(3)">
+    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    Guardar
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TOTAL=25, ABS=13, SAVE_KEY='pactometre_v2';
+
+let partits=[
+  {id:'ERC',   nom:'ERC',         full:'Esquerra Republicana de Catalunya',      color:'#F59E0B',escons:7},
+  {id:'JUNTS', nom:'Junts',        full:'Junts per Manresa',                      color:'#38BDF8',escons:6},
+  {id:'PSC',   nom:'PSC',          full:'Partit dels Socialistes de Catalunya',   color:'#EF4444',escons:4},
+  {id:'FEM',   nom:'Fem Manresa',  full:'Fem Manresa - Alt. Municipalista (CUP)', color:'#EAB308',escons:3},
+  {id:'IM',    nom:'Impulsem',     full:'Impulsem Manresa (PDeCAT)',              color:'#8B5CF6',escons:2},
+  {id:'FNC',   nom:'FNC',          full:'Front Nacional de Catalunya',            color:'#10B981',escons:2},
+  {id:'VOX',   nom:'Vox',          full:'Vox',                                   color:'#84CC16',escons:1},
+  {id:'AC',    nom:'Aliança Cat.', full:'Aliança Catalana',                       color:'#DC2626',escons:0},
+  {id:'JFNC',  nom:'Junts+FNC',   full:'Junts per Catalunya + FNC',              color:'#2563EB',escons:0},
+  {id:'PP',    nom:'PP',           full:'Partit Popular',                        color:'#1D4ED8',escons:0},
+  {id:'SUMAR', nom:'Sumar',        full:'Sumar / Comuns Podem',                  color:'#DB2777',escons:0},
+];
+
+let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, curTab=0;
+
+/* ── TABS ── */
+function setTab(i){
+  if(curTab===i) return;
+  document.querySelectorAll('.screen').forEach((s,j)=>s.classList.toggle('active',j===i));
+  document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  curTab=i;
+  if(i===3) renderSaves();
+}
+
+/* ── HELPERS ── */
+function byId(id){ return partits.find(p=>p.id===id); }
+function totalAss(){ return partits.reduce((s,p)=>s+p.escons,0); }
+
+/* ── ALCALDE LOGIC ── */
+function computeAlcalde(){
+  const act=partits.filter(p=>p.escons>0);
+  if(!act.length) return {alcaldeId:null,tie:false,candidates:[]};
+  const mx=Math.max(...act.map(p=>p.escons));
+  const cands=act.filter(p=>p.escons===mx);
+  if(cands.length===1) return {alcaldeId:cands[0].id,tie:false,candidates:cands};
+  const picked=alcaldeManualId&&cands.find(p=>p.id===alcaldeManualId);
+  return {alcaldeId:picked?alcaldeManualId:null,tie:true,candidates:cands};
+}
+
+function buildSeats(){
+  const {alcaldeId,tie}=computeAlcalde();
+  let pool=partits.map(p=>({...p,n:p.escons}));
+  let alcSeat=null;
+  if(alcaldeId){
+    const ap=pool.find(p=>p.id===alcaldeId);
+    if(ap&&ap.n>0){ alcSeat={id:ap.id,color:ap.color,nom:ap.nom}; ap.n--; }
+  }
+  let flat=[];
+  pool.forEach(p=>{ for(let i=0;i<p.n;i++) flat.push({id:p.id,color:p.color,nom:p.nom}); });
+  while(flat.length<24) flat.push(null);
+  return {alcSeat,seats24:flat.slice(0,24),tie,alcaldeId};
+}
+
+/* ── RENDERS ── */
+function renderSala(){
+  const {alcSeat,seats24,tie}=buildSeats();
+  const mk=d=>{ const e=document.createElement('div'); e.className='seat'+(d?' filled':''); if(d){e.style.background=d.color;e.style.borderColor='rgba(0,0,0,.28)';} return e; };
+  (['col-le','col-li','col-ri','col-re']).forEach((id,ci)=>{
+    const c=document.getElementById(id); c.innerHTML='';
+    seats24.slice(ci*6,ci*6+6).forEach(d=>c.appendChild(mk(d)));
+  });
+  const alcEl=document.getElementById('seat-alcalde');
+  alcEl.className='seat-alcalde'; alcEl.removeAttribute('style');
+  if(alcSeat){ alcEl.classList.add('filled'); alcEl.style.background=alcSeat.color; alcEl.style.borderColor='rgba(0,0,0,.3)'; }
+  else if(tie){ alcEl.style.background='rgba(245,200,66,.12)'; alcEl.style.borderColor='rgba(245,200,66,.4)'; alcEl.style.borderWidth='2px'; }
+
+  const tz=document.getElementById('tie-zone'), ts=document.getElementById('tie-select');
+  if(tie&&(!alcaldeManualId||tieOpen)){
+    tz.style.display='block';
+    ts.innerHTML='<option value="">-- Selecciona --</option>';
+    computeAlcalde().candidates.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.nom+' ('+p.escons+')'; ts.appendChild(o); });
+  } else { tz.style.display='none'; }
+
+  const leg=document.getElementById('sala-legend'); leg.innerHTML='';
+  partits.filter(p=>p.escons>0).forEach(p=>{
+    const it=document.createElement('div'); it.className='leg-item';
+    const d=document.createElement('div'); d.className='leg-dot'; d.style.background=p.color;
+    const l=document.createElement('span'); l.textContent=p.nom+' ('+p.escons+')';
+    it.appendChild(d); it.appendChild(l); leg.appendChild(it);
+  });
+}
+
+function renderStats(){
+  const t=totalAss();
+  document.getElementById('stat-ass').textContent=t;
+  document.getElementById('stat-ll').textContent=Math.max(0,TOTAL-t);
+}
+
+function renderAlcalde(){
+  const {alcaldeId,tie}=computeAlcalde();
+  const nm=document.getElementById('alc-name'), dt=document.getElementById('alc-dot');
+  if(alcaldeId){ const p=byId(alcaldeId); nm.textContent=p.nom+' — '+p.full; nm.style.color=p.color; dt.style.background=p.color; }
+  else { nm.textContent=tie?'Empat — pendent':'Sense designar'; nm.style.color=tie?'var(--gold)':'var(--muted)'; dt.style.background=tie?'rgba(245,200,66,.4)':'rgba(255,255,255,.1)'; }
+}
+
+function renderPartits(){
+  const grid=document.getElementById('partits-grid'); grid.innerHTML='';
+  partits.forEach(p=>{
+    const card=document.createElement('div'); card.className='pc';
+    const dot=document.createElement('div'); dot.className='cdot'; dot.style.background=p.color;
+    const info=document.createElement('div'); info.className='pi';
+    info.innerHTML='<div class="pn">'+p.nom+'</div><div class="pf">'+p.full+'</div>';
+    const ctrl=document.createElement('div'); ctrl.className='sctrl';
+    const bm=document.createElement('button'); bm.className='sbtn'; bm.textContent='−'; bm.onclick=()=>changeEscons(p.id,-1);
+    const nm=document.createElement('span'); nm.className='snum'; nm.textContent=p.escons; nm.style.color=p.color;
+    const bp=document.createElement('button'); bp.className='sbtn'; bp.textContent='+'; bp.onclick=()=>changeEscons(p.id,1);
+    const db=document.createElement('button'); db.className='delbtn'; db.title='Eliminar';
+    db.innerHTML='<svg viewBox="0 0 14 14"><polyline points="2,3.5 12,3.5"/><path d="M5.5,3.5V2.5a.5.5,0,0,1,.5-.5h2a.5.5,0,0,1,.5.5v1"/><path d="M3,3.5l.7,7.5a1,1,0,0,0,1,.9h4.6a1,1,0,0,0,1-.9L11,3.5"/><line x1="5.5" y1="6" x2="5.5" y2="9.5"/><line x1="8.5" y1="6" x2="8.5" y2="9.5"/></svg>';
+    db.onclick=()=>eliminarPartit(p.id);
+    ctrl.appendChild(bm); ctrl.appendChild(nm); ctrl.appendChild(bp); ctrl.appendChild(db);
+    card.appendChild(dot); card.appendChild(info); card.appendChild(ctrl);
+    grid.appendChild(card);
+  });
+}
+
+function renderPacte(){
+  const list=document.getElementById('pacte-list'); list.innerHTML='';
+  partits.filter(p=>p.escons>0).forEach(p=>{
+    const it=document.createElement('div'); it.className='pacte-item';
+    const chk=document.createElement('input'); chk.type='checkbox'; chk.className='pchk'; chk.checked=!!pacteChecked[p.id];
+    if(chk.checked) chk.style.background=p.color;
+    chk.onchange=()=>{ pacteChecked[p.id]=chk.checked; chk.style.background=chk.checked?p.color:''; updatePacte(); };
+    const dot=document.createElement('div'); dot.className='leg-dot'; dot.style.background=p.color; dot.style.flexShrink='0';
+    const nm=document.createElement('label'); nm.className='pname'; nm.textContent=p.nom; nm.onclick=()=>{ chk.checked=!chk.checked; chk.dispatchEvent(new Event('change')); };
+    const st=document.createElement('span'); st.className='pseats'; st.textContent=p.escons;
+    it.appendChild(chk); it.appendChild(dot); it.appendChild(nm); it.appendChild(st); list.appendChild(it);
+  });
+  updatePacte();
+}
+
+function updatePacte(){
+  let total=0; partits.forEach(p=>{ if(pacteChecked[p.id]&&p.escons>0) total+=p.escons; });
+  const tot=document.getElementById('ptotal'), bar=document.getElementById('pb'), badge=document.getElementById('pstatus');
+  tot.textContent=total+' / '+TOTAL;
+  bar.style.width=Math.min(100,Math.round(total/TOTAL*100))+'%';
+  if(!total){ bar.style.background='rgba(255,255,255,.08)'; badge.style.display='none'; }
+  else if(total>=ABS){ bar.style.background='var(--abs)'; badge.style.display='inline-block'; badge.className='pstatus s-yes'; badge.textContent='Majoria absoluta'; }
+  else { bar.style.background='#f59e0b'; badge.style.display='inline-block'; badge.className='pstatus s-no'; badge.textContent='Falten '+(ABS-total)+' escons'; }
+}
+
+function renderAll(){ renderStats(); renderPartits(); renderAlcalde(); renderSala(); renderPacte(); }
+
+/* ── ACTIONS ── */
+function changeEscons(id,delta){
+  const p=byId(id); if(!p) return;
+  const nou=p.escons+delta;
+  if(nou<0||totalAss()+delta>TOTAL) return;
+  p.escons=nou; alcaldeManualId=null; tieOpen=false; renderAll();
+}
+function onTieSelect(val){ if(val){ alcaldeManualId=val; tieOpen=false; } renderAll(); }
+
+document.getElementById('seat-alcalde').addEventListener('click',()=>{
+  const {tie}=computeAlcalde(); if(tie){ tieOpen=!tieOpen; renderSala(); }
+});
+
+function afegirPartit(){
+  const nEl=document.getElementById('new-nom'), fEl=document.getElementById('new-full'), cEl=document.getElementById('new-color'), err=document.getElementById('errmsg');
+  const nom=nEl.value.trim(); if(!nom){ err.style.display='block'; return; }
+  err.style.display='none';
+  partits.push({id:'C_'+Date.now(),nom,full:fEl.value.trim()||nom,color:cEl.value,escons:0});
+  nEl.value=''; fEl.value=''; cEl.value='#a855f7'; renderAll();
+}
+function eliminarPartit(id){
+  const idx=partits.findIndex(p=>p.id===id); if(idx===-1) return;
+  if(alcaldeManualId===id) alcaldeManualId=null;
+  delete pacteChecked[id]; partits.splice(idx,1); renderAll();
+}
+
+/* ── SAVES ── */
+function getSaves(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY))||[]; }catch(e){ return []; } }
+function setSaves(a){ localStorage.setItem(SAVE_KEY,JSON.stringify(a)); }
+function getState(){ return {partits:partits.map(p=>({...p})),alcaldeManualId,pacteChecked:{...pacteChecked}}; }
+function applyState(st){ partits=st.partits.map(p=>({...p})); alcaldeManualId=st.alcaldeManualId||null; pacteChecked={...(st.pacteChecked||{})}; tieOpen=false; }
+
+function saveNew(){
+  const nEl=document.getElementById('save-name');
+  const name=nEl.value.trim()||('Escenari '+new Date().toLocaleString('ca',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}));
+  const saves=getSaves();
+  const slot={id:'s_'+Date.now(),name,ts:Date.now(),state:getState()};
+  saves.unshift(slot); if(saves.length>10) saves.splice(10);
+  setSaves(saves); activeSlotId=slot.id; nEl.value='';
+  renderSaves(); showToast('Desat: "'+name+'"');
+}
+function overwrite(id){
+  const saves=getSaves(); const idx=saves.findIndex(s=>s.id===id); if(idx===-1) return;
+  saves[idx].state=getState(); saves[idx].ts=Date.now(); setSaves(saves);
+  activeSlotId=id; renderSaves(); showToast('Sobreescrit: "'+saves[idx].name+'"');
+}
+function loadSlot(id){
+  const saves=getSaves(); const slot=saves.find(s=>s.id===id); if(!slot) return;
+  applyState(slot.state); activeSlotId=id; renderAll(); renderSaves(); showToast('Carregat: "'+slot.name+'"');
+}
+function deleteSlot(id){
+  let saves=getSaves(); const slot=saves.find(s=>s.id===id);
+  saves=saves.filter(s=>s.id!==id); setSaves(saves);
+  if(activeSlotId===id) activeSlotId=null;
+  renderSaves(); if(slot) showToast('Eliminat: "'+slot.name+'"');
+}
+function renderSaves(){
+  const saves=getSaves(), c=document.getElementById('save-slots'), nm=document.getElementById('no-saves-msg');
+  c.innerHTML=''; nm.style.display=saves.length?'none':'block';
+  saves.forEach(slot=>{
+    const div=document.createElement('div'); div.className='save-slot'+(activeSlotId===slot.id?' active':'');
+    const info=document.createElement('div'); info.style.flex='1'; info.style.minWidth='0';
+    const sn=document.createElement('div'); sn.className='slot-name'; sn.textContent=slot.name;
+    const sm=document.createElement('div'); sm.className='slot-meta';
+    sm.textContent=new Date(slot.ts).toLocaleString('ca',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    info.appendChild(sn); info.appendChild(sm);
+    const acts=document.createElement('div'); acts.className='slot-acts';
+    const bl=document.createElement('button'); bl.className='slbtn ld'; bl.textContent='Carrega'; bl.onclick=e=>{ e.stopPropagation(); loadSlot(slot.id); };
+    const bo=document.createElement('button'); bo.className='slbtn ow'; bo.textContent='Sobreescriu'; bo.onclick=e=>{ e.stopPropagation(); overwrite(slot.id); };
+    const bd=document.createElement('button'); bd.className='slbtn dl'; bd.textContent='Esborra'; bd.onclick=e=>{ e.stopPropagation(); deleteSlot(slot.id); };
+    acts.appendChild(bl); acts.appendChild(bo); acts.appendChild(bd);
+    div.appendChild(info); div.appendChild(acts); c.appendChild(div);
+  });
+}
+
+/* ── TOAST ── */
+let tt;
+function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ── PWA ── */
+if('serviceWorker' in navigator){
+  const sw=`const C='pm-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.add(self.location.pathname))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+renderAll();
+renderSaves();
+</script>
+</body>
+</html>
