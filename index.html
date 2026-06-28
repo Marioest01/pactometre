@@ -20,60 +20,66 @@
   --r:12px; --rs:8px;
 }
 
-html, body{
-  margin:0;
-  padding:0;
-  height:100%;
-  width:100%;
-  background:#0a0c14;
-  overflow:hidden;
-}
-body{
+/* ── FUERZA EL CONTENEDOR AL LÍMITE DE LA PANTALLA FISICA ── */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #0a0c14;
+  overflow: hidden;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  display:flex;
-  flex-direction:column;
-  font-family:'Inter',sans-serif;
-  color:var(--text);
 }
 
-/* ── HEADER fixed ── */
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+}
+
+/* ── HEADER FIJADO ARRIBA (Considera la isla dinámica) ── */
 #header {
-  position:relative;
-  z-index:200;
-  background:#0a0c14;
-  border-bottom:1px solid var(--border);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + env(safe-area-inset-top, 0px));
+  background: #0a0c14;
+  border-bottom: 1px solid var(--border);
   padding-top: env(safe-area-inset-top, 0px);
-  flex-shrink: 0;
+  z-index: 200;
 }
 #header-inner {
-  height:56px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 1rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
 }
 .h-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; letter-spacing:-.02em; }
 .h-title span { color:var(--accent); }
 .h-sub { font-size:.6rem; color:var(--muted); margin-top:1px; }
 .badge-abs { padding:3px 9px; border-radius:999px; font-size:.65rem; font-weight:600; border:1px solid rgba(34,197,94,.3); background:rgba(34,197,94,.1); color:var(--abs); white-space:nowrap; }
 
-/* ── TAB BAR fixed ── */
+/* ── TAB BAR ANCLADO ABAJO DEL TODO (Sin huecos flotantes) ── */
 #tabbar {
-  position:relative;
-  z-index:200;
-  background:#0a0c14;
-  border-top:1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom, 20px); /* Forzamos un fallback de 20px si falla en iOS standalone */
-  flex-shrink: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + env(safe-area-inset-bottom, 24px)); /* Mantiene el espacio del notch inferior */
+  background: #0a0c14;
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 24px);
+  z-index: 200;
 }
 #tabbar-inner {
-  height:60px;
-  display:flex;
-  align-items:stretch;
+  height: 60px;
+  display: flex;
+  align-items: stretch;
 }
 .tab-btn {
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -85,39 +91,40 @@ body{
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active svg { stroke:var(--accent); }
 
-/* ── CONTENT ── */
-#content{
-  flex:1;
-  position:relative;
-  overflow:hidden;
+/* ── CONTENIDO ADAPTATIVO ENTRE AMBOS BLOQUES ── */
+#content {
+  position: absolute;
+  top: calc(56px + env(safe-area-inset-top, 0px));
+  bottom: calc(60px + env(safe-area-inset-bottom, 24px));
+  left: 0;
+  right: 0;
+  overflow: hidden;
 }
 
-/* ── SCREENS ── */
+/* ── SCREENS INDEPENDIENTES CON SCROLL PROPIO ── */
 .screen {
-  display:none;
-  position:absolute;
-  inset:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  flex-direction:column;
-  gap:.8rem;
-  padding:1rem;
+  display: none;
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex-direction: column;
+  gap: .8rem;
+  padding: 1rem;
 }
-.screen.active { display:flex; }
+.screen.active { display: flex; }
 
-/* ── CARDS ── */
+/* ── RESTO DE COMPONENTES VISUALES ── */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
 .card-title { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.6rem; }
 
-/* ── STATS ── */
 .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:7px; text-align:center; }
 .stat-n { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; line-height:1; }
 .stat-l { font-size:.55rem; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
 .stat-card.hi .stat-n { color:var(--abs); }
 
-/* ── SALA ── */
 .sala-outer { display:flex; flex-direction:column; align-items:center; gap:8px; }
 .alcalde-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; }
 .alcalde-lbl { font-size:.52rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
@@ -134,12 +141,10 @@ body{
 .leg-item { display:flex; align-items:center; gap:4px; font-size:.63rem; color:var(--muted); }
 .leg-dot { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
 
-/* TIE */
 .tie-inline { text-align:center; margin-top:4px; }
 .tie-lbl-inline { font-size:.58rem; color:var(--gold); font-weight:600; margin-bottom:3px; }
 .tie-sel { background:var(--surface2); border:1px solid rgba(245,200,66,.4); border-radius:var(--rs); color:var(--text); font-size:.7rem; font-weight:600; font-family:inherit; padding:5px 22px 5px 8px; cursor:pointer; outline:none; appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23f5c842' d='M5 7L1 2h8z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 7px center; background-color:var(--surface2); max-width:160px; }
 
-/* PARTITS */
 .pc { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:9px 10px; display:flex; align-items:center; gap:8px; }
 .cdot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
 .pi { flex:1; min-width:0; }
@@ -153,7 +158,6 @@ body{
 .delbtn:active { background:rgba(248,113,113,.15); color:#f87171; }
 .delbtn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 
-/* FORM */
 .frow { display:flex; gap:6px; margin-bottom:7px; }
 .frow input[type=text] { flex:1; min-width:0; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--rs); padding:8px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none; }
 .frow input[type=text]:focus { border-color:var(--accent); }
@@ -162,7 +166,6 @@ body{
 .btnadd:active { background:rgba(79,142,247,.22); }
 .errmsg { font-size:.7rem; color:#f87171; margin-top:4px; display:none; }
 
-/* PACTE */
 .alcalde-row { display:flex; align-items:center; gap:9px; }
 .alc-dot { width:12px; height:12px; border-radius:3px; flex-shrink:0; }
 .alc-name { font-family:'Space Grotesk',sans-serif; font-size:.9rem; font-weight:700; }
@@ -180,7 +183,6 @@ body{
 .pb-wrap { height:5px; background:rgba(255,255,255,.06); border-radius:99px; overflow:hidden; margin-top:5px; }
 .pb-fill { height:100%; border-radius:99px; transition:width .3s, background .3s; }
 
-/* GUARDATS */
 .save-name-row { display:flex; gap:7px; }
 .save-name-row input { flex:1; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--rs); padding:9px 10px; color:var(--text); font-size:.8rem; font-family:inherit; outline:none; }
 .save-name-row input:focus { border-color:var(--abs); }
@@ -201,14 +203,12 @@ body{
 .slbtn.dl:active { background:rgba(248,113,113,.1); }
 .no-saves { font-size:.72rem; color:var(--muted); text-align:center; padding:.5rem 0; }
 
-/* BOTONS IA i NOU */
 .btn-ai { width:100%; padding:11px; border-radius:var(--rs); background:var(--ai-bg); border:1px solid var(--ai-border); color:var(--ai); font-size:.82rem; font-weight:600; cursor:pointer; font-family:inherit; touch-action:manipulation; display:flex; align-items:center; justify-content:center; gap:7px; }
 .btn-ai:active { background:rgba(168,85,247,.22); }
 .btn-ai svg { width:16px; height:16px; flex-shrink:0; }
 .btn-nou { width:100%; padding:11px; border-radius:var(--rs); background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.25); color:var(--abs); font-size:.82rem; font-weight:600; cursor:pointer; font-family:inherit; touch-action:manipulation; display:flex; align-items:center; justify-content:center; gap:7px; }
 .btn-nou:active { background:rgba(34,197,94,.2); }
 
-/* MODAL IA */
 .ai-modal-bg { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .2s; }
 .ai-modal-bg.show { opacity:1; pointer-events:all; }
 .ai-modal { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r) var(--r) 0 0; padding:1.25rem 1.1rem 2rem; width:100%; max-height:80vh; overflow-y:auto; transform:translateY(20px); transition:transform .2s; }
@@ -219,13 +219,13 @@ body{
 .ai-result { font-size:.8rem; line-height:1.6; color:var(--text); }
 .ai-result .loading { color:var(--muted); font-style:italic; }
 
-/* TOAST */
 .toast { position:fixed; bottom:calc(env(safe-area-inset-bottom, 0px) + 80px); left:50%; transform:translateX(-50%) translateY(10px); background:#1e2235; border:1px solid var(--border2); color:var(--text); padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div id="header">
   <div id="header-inner">
     <div>
@@ -236,8 +236,10 @@ body{
   </div>
 </div>
 
+<!-- CONTENT -->
 <div id="content">
 
+  <!-- S0: SALA -->
   <div class="screen active" id="s0">
     <div class="stats-row">
       <div class="stat-card"><div class="stat-n" id="stat-ass">0</div><div class="stat-l">Total</div></div>
@@ -275,9 +277,9 @@ body{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5L16 21H8l2-11.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/><path d="M9 21h6"/></svg>
       Generar escenari amb IA
     </button>
-  
   </div>
 
+  <!-- S1: PARTITS -->
   <div class="screen" id="s1">
     <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
     <button class="btn-ai" onclick="openAI('escenari')">
@@ -296,6 +298,7 @@ body{
     </div>
   </div>
 
+  <!-- S2: PACTES -->
   <div class="screen" id="s2">
     <div class="card">
       <div class="card-title">Alcalde / Alcaldessa</div>
@@ -321,9 +324,9 @@ body{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
       Recomanar pacte amb IA
     </button>
-  
   </div>
 
+  <!-- S3: GUARDATS -->
   <div class="screen" id="s3">
     <div class="card">
       <div class="card-title">Desar escenari actual</div>
@@ -343,10 +346,12 @@ body{
         Crear nou escenari
       </button>
     </div>
-  
   </div>
 
-</div><div id="tabbar">
+</div><!-- /content -->
+
+<!-- TAB BAR -->
+<div id="tabbar">
   <div id="tabbar-inner">
     <button class="tab-btn active" id="tab0" onclick="setTab(0)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
@@ -367,6 +372,7 @@ body{
   </div>
 </div>
 
+<!-- MODAL IA -->
 <div class="ai-modal-bg" id="ai-modal-bg" onclick="closeAIifBg(event)">
   <div class="ai-modal">
     <div class="ai-modal-header">
@@ -656,7 +662,7 @@ if('serviceWorker' in navigator){
   ctx.fillStyle='#111422'; rr(28,28,456,456,82); ctx.fill();
   ctx.fillStyle='#4f8ef7'; ctx.font='bold 38px system-ui,sans-serif'; ctx.textAlign='center'; ctx.fillText('MANRESA 2027',256,100);
   [{x:50,h:340,color:'#F59E0B'},{x:130,h:310,color:'#1E3A5F'},{x:210,h:240,color:'#E31D3C'},{x:290,h:200,color:'#F0C040'},{x:370,h:160,color:'#38BDF8'},{x:430,h:100,color:'#63BE21'}].forEach(b=>{ ctx.fillStyle=b.color; rr(b.x,440-b.h,52,b.h,14); ctx.fill(); });
-  ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(40,442); ctx.lineTo(472,442); ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(40,442); ctx.lineTo(472,442); stroke();
   const png=c.toDataURL('image/png');
   let link=document.querySelector('link[rel="apple-touch-icon"]');
   if(!link){ link=document.createElement('link'); link.rel='apple-touch-icon'; document.head.appendChild(link); }
