@@ -662,29 +662,21 @@ if('serviceWorker' in navigator){
 renderAll();
 renderSaves();
 
-// Posicionar header, content i tabbar amb píxels reals
-function layoutApp(){
-  var headerEl = document.getElementById('header');
-  var contentEl = document.getElementById('content');
-  var tabbarEl = document.getElementById('tabbar');
-
-  // Mesurar l'alçada real del header (inclou safe-area-top)
-  var headerH = headerEl.getBoundingClientRect().height;
-  // Alçada total de la finestra
-  var winH = window.innerHeight;
-  // Alçada de la tabbar (60px fixos)
-  var tabH = 60;
-
-  // Aplicar
-  contentEl.style.top = headerH + 'px';
-  contentEl.style.bottom = tabH + 'px';
-  tabbarEl.style.bottom = '0px';
-}
-
-// Executar immediatament i després de cada resize
-layoutApp();
-window.addEventListener('resize', layoutApp);
-window.addEventListener('orientationchange', function(){ setTimeout(layoutApp, 200); });
+// Layout: executar en cada frame fins que el header tingui altura
+(function fix(){
+  var h = document.getElementById('header');
+  var c = document.getElementById('content');
+  if(!h || !c){ requestAnimationFrame(fix); return; }
+  var hh = h.getBoundingClientRect().height;
+  if(hh < 10){ requestAnimationFrame(fix); return; }
+  c.style.top = hh + 'px';
+  c.style.bottom = '60px';
+})();
+window.addEventListener('resize', function(){
+  var h = document.getElementById('header');
+  var c = document.getElementById('content');
+  if(h && c) c.style.top = h.getBoundingClientRect().height + 'px';
+});
 </script>
 </body>
 </html>
