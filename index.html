@@ -2,7 +2,7 @@
 <html lang="ca">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,100 +20,124 @@
   --r:12px; --rs:8px;
 }
 
-html, body{
-  margin:0;
-  padding:0;
-  height:100%;
-  width:100%;
-  background:#0a0c14;
-  overflow:hidden;
+html, body {
+  margin:0; padding:0;
+  min-height:100vh;
+  background:var(--bg);
 }
-body{
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display:flex;
-  flex-direction:column;
+body {
   font-family:'Inter',sans-serif;
   color:var(--text);
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
 }
 
-/* ── HEADER fixed ── */
+/* ── HEADER desktop ── */
 #header {
-  position:relative;
+  position:sticky;
+  top:0;
   z-index:200;
-  background:#0a0c14;
+  background:rgba(10,12,20,.97);
   border-bottom:1px solid var(--border);
-  padding-top: env(safe-area-inset-top, 0px);
-  flex-shrink: 0;
+  backdrop-filter:blur(12px);
 }
 #header-inner {
-  height:56px;
+  height:60px;
+  max-width:1400px;
+  margin:0 auto;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 1rem;
+  padding:0 2rem;
 }
+.h-title { font-size:1.2rem; }
 .h-title { font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; letter-spacing:-.02em; }
 .h-title span { color:var(--accent); }
 .h-sub { font-size:.6rem; color:var(--muted); margin-top:1px; }
 .badge-abs { padding:3px 9px; border-radius:999px; font-size:.65rem; font-weight:600; border:1px solid rgba(34,197,94,.3); background:rgba(34,197,94,.1); color:var(--abs); white-space:nowrap; }
 
-/* ── TAB BAR fixed ── */
+/* ── SIDEBAR (tabs) desktop ── */
 #tabbar {
-  position:relative;
-  z-index:200;
-  background:#0a0c14;
-  border-top:1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom, 20px); /* Forzamos un fallback de 20px si falla en iOS standalone */
-  flex-shrink: 0;
+  width:200px;
+  flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  padding:1rem 0;
 }
 #tabbar-inner {
-  height:60px;
   display:flex;
-  align-items:stretch;
+  flex-direction:column;
+  gap:4px;
+  padding:0 .75rem;
 }
 .tab-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:4px; background:none; border:none; cursor:pointer;
-  color:var(--muted); font-size:.55rem; font-weight:600; font-family:inherit;
-  letter-spacing:.04em; text-transform:uppercase; touch-action:manipulation;
+  display:flex; flex-direction:row; align-items:center;
+  gap:10px;
+  background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:.82rem; font-weight:600; font-family:inherit;
+  letter-spacing:.02em; text-transform:none;
+  padding:10px 12px;
+  border-radius:var(--rs);
+  width:100%;
+  text-align:left;
+  transition:background .12s, color .12s;
 }
-.tab-btn svg { width:26px; height:26px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
-.tab-btn.active { color:var(--accent); }
+.tab-btn:hover { background:rgba(255,255,255,.05); color:var(--text); }
+.tab-btn svg { width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+.tab-btn.active { color:var(--accent); background:rgba(79,142,247,.1); }
 .tab-btn.active svg { stroke:var(--accent); }
 
-/* ── CONTENT ── */
-#content{
+/* ── MAIN AREA (sidebar + content) ── */
+#main-area {
+  display:flex;
   flex:1;
-  position:relative;
-  overflow:hidden;
+  min-height:0;
+}
+
+/* ── CONTENT ── */
+#content {
+  flex:1;
+  overflow-y:auto;
+  min-height:0;
 }
 
 /* ── SCREENS ── */
 .screen {
   display:none;
-  position:absolute;
-  inset:0;
-  overflow-y:auto;
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
   flex-direction:column;
-  gap:.8rem;
-  padding:1rem;
+  gap:1rem;
+  padding:2rem;
+  max-width:900px;
+  margin:0 auto;
+  width:100%;
 }
 .screen.active { display:flex; }
 
+/* Layout 2 columnes per a desktop */
+@media(min-width:900px){
+  #s0.active {
+    display:grid;
+    grid-template-columns:1fr 380px;
+    gap:1.5rem;
+    align-items:start;
+  }
+  #s0 .stats-row { grid-column:1/-1; }
+  #s0 .sala-col { grid-column:1; display:flex; flex-direction:column; gap:1rem; }
+  #s0 .info-col { grid-column:2; display:flex; flex-direction:column; gap:1rem; position:sticky; top:1rem; }
+}
+.sala-col, .info-col { display:contents; }
+
 /* ── CARDS ── */
-.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:1.1rem 1.25rem; }
 .card-title { font-size:.62rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:.6rem; }
 
 /* ── STATS ── */
 .stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
 .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:7px; text-align:center; }
-.stat-n { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:700; line-height:1; }
+.stat-n { font-family:'Space Grotesk',sans-serif; font-size:1.6rem; font-weight:700; line-height:1; }
 .stat-l { font-size:.55rem; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:.05em; }
 .stat-card.hi .stat-n { color:var(--abs); }
 
@@ -121,14 +145,14 @@ body{
 .sala-outer { display:flex; flex-direction:column; align-items:center; gap:8px; }
 .alcalde-wrap { display:flex; flex-direction:column; align-items:center; gap:3px; }
 .alcalde-lbl { font-size:.52rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
-.seat-alcalde { width:34px; height:34px; border-radius:7px; border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.04); cursor:pointer; transition:box-shadow .15s; position:relative; flex-shrink:0; }
+.seat-alcalde { width:46px; height:46px; border-radius:9px; border:2px solid rgba(255,255,255,.15); background:rgba(255,255,255,.04); cursor:pointer; transition:box-shadow .15s; position:relative; flex-shrink:0; }
 .seat-alcalde:active { box-shadow:0 0 0 3px rgba(245,200,66,.35); }
 .seat-alcalde.filled { border-color:rgba(0,0,0,.3); }
 .seats-visual { display:flex; align-items:flex-start; }
-.side-block { display:flex; gap:5px; }
-.aisle { width:22px; flex-shrink:0; }
-.col-seats { display:flex; flex-direction:column; gap:5px; }
-.seat { width:28px; height:28px; border-radius:5px; border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); flex-shrink:0; }
+.side-block { display:flex; gap:8px; }
+.aisle { width:40px; flex-shrink:0; }
+.col-seats { display:flex; flex-direction:column; gap:8px; }
+.seat { width:38px; height:38px; border-radius:7px; border:1.5px solid rgba(255,255,255,.08); background:rgba(255,255,255,.04); flex-shrink:0; }
 .seat.filled { border-color:rgba(0,0,0,.25); }
 .sala-legend { display:flex; flex-wrap:wrap; gap:4px 9px; justify-content:center; margin-top:.6rem; padding-top:.6rem; border-top:1px solid var(--border); }
 .leg-item { display:flex; align-items:center; gap:4px; font-size:.63rem; color:var(--muted); }
@@ -143,8 +167,8 @@ body{
 .pc { background:var(--surface); border:1px solid var(--border); border-radius:var(--rs); padding:9px 10px; display:flex; align-items:center; gap:8px; }
 .cdot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
 .pi { flex:1; min-width:0; }
-.pn { font-size:.76rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pf { font-size:.62rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pn { font-size:.9rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pf { font-size:.78rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .sctrl { display:flex; align-items:center; gap:4px; flex-shrink:0; }
 .sbtn { width:30px; height:30px; border-radius:7px; border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; touch-action:manipulation; }
 .sbtn:active { background:rgba(255,255,255,.15); }
@@ -220,7 +244,7 @@ body{
 .ai-result .loading { color:var(--muted); font-style:italic; }
 
 /* TOAST */
-.toast { position:fixed; bottom:calc(env(safe-area-inset-bottom, 0px) + 80px); left:50%; transform:translateX(-50%) translateY(10px); background:#1e2235; border:1px solid var(--border2); color:var(--text); padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap; }
+.toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%) translateY(10px); background:#1e2235; border:1px solid var(--border2); color:var(--text); padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
@@ -236,7 +260,25 @@ body{
   </div>
 </div>
 
-<div id="content">
+<div id="main-area">
+<div id="tabbar">
+  <div id="tabbar-inner">
+    <button class="tab-btn active" id="tab0" onclick="setTab(0)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+      Sala de plens
+    </button>
+    <button class="tab-btn" id="tab1" onclick="setTab(1)">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
+      Partits
+    </button>
+
+    <button class="tab-btn" id="tab2" onclick="setTab(2)">
+      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar
+    </button>
+  </div>
+</div><!-- /tabbar sidebar -->
+
 
   <div class="screen active" id="s0">
     <div class="stats-row">
@@ -244,6 +286,7 @@ body{
       <div class="stat-card"><div class="stat-n" id="stat-ll">25</div><div class="stat-l">Lliures</div></div>
       <div class="stat-card hi"><div class="stat-n">13</div><div class="stat-l">Majoria</div></div>
     </div>
+    <div class="sala-col">
     <div class="card">
       <div class="card-title">Sala de plens</div>
       <div class="sala-outer">
@@ -275,11 +318,34 @@ body{
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5L16 21H8l2-11.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/><path d="M9 21h6"/></svg>
       Generar escenari amb IA
     </button>
-  
+    </div><!-- /sala-col -->
+
+    <!-- Columna dreta: alcalde + pactòmetre -->
+    <div class="info-col">
+
+      <!-- Pactòmetre compacte -->
+      <div class="card">
+        <div class="card-title">Simulador de pactes</div>
+        <p style="font-size:.75rem;color:var(--muted);margin-bottom:.65rem;">Marca els partits del govern:</p>
+        <div id="pacte-list-sala"></div>
+        <div style="margin-top:.65rem;border-top:1px solid var(--border);padding-top:.65rem;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Escons del pacte</div>
+            <div style="font-family:Space Grotesk,sans-serif;font-size:1.3rem;font-weight:700;" id="ptotal-sala">0 / 25</div>
+            <div class="pb-wrap" style="margin-top:5px;"><div class="pb-fill" id="pb-sala" style="width:0%"></div></div>
+          </div>
+          <div class="pstatus" id="pstatus-sala" style="display:none"></div>
+        </div>
+      </div>
+      <button class="btn-ai" onclick="openAI('pacte')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Recomanar pacte amb IA
+      </button>
+    </div><!-- /info-col -->
   </div>
 
   <div class="screen" id="s1">
-    <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;" id="partits-grid"></div>
     <button class="btn-ai" onclick="openAI('escenari')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5L16 21H8l2-11.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/><path d="M9 21h6"/></svg>
       Generar escenari amb IA
@@ -346,26 +412,8 @@ body{
   
   </div>
 
-</div><div id="tabbar">
-  <div id="tabbar-inner">
-    <button class="tab-btn active" id="tab0" onclick="setTab(0)">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
-      Sala
-    </button>
-    <button class="tab-btn" id="tab1" onclick="setTab(1)">
-      <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="16" y1="11" x2="22" y2="11"/><line x1="19" y1="8" x2="19" y2="14"/></svg>
-      Partits
-    </button>
-    <button class="tab-btn" id="tab2" onclick="setTab(2)">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-      Pactes
-    </button>
-    <button class="tab-btn" id="tab3" onclick="setTab(3)">
-      <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-      Guardar
-    </button>
-  </div>
-</div>
+</div><!-- /content -->
+</div><!-- /main-area -->
 
 <div class="ai-modal-bg" id="ai-modal-bg" onclick="closeAIifBg(event)">
   <div class="ai-modal">
@@ -398,10 +446,14 @@ let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, cur
 
 function setTab(i){
   if(curTab===i) return;
-  document.querySelectorAll('.screen').forEach((s,j)=>s.classList.toggle('active',j===i));
-  document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  // Tabs visibles: 0=Sala, 1=Partits, 2=Guardar (s3 al DOM)
+  // Mapeig: tab 0->screen 0, tab 1->screen 1, tab 2->screen 3
+  const screenMap = [0, 1, 3];
+  const si = screenMap[i] !== undefined ? screenMap[i] : i;
+  document.querySelectorAll('.screen').forEach((s,j)=>s.classList.toggle('active', j===si));
+  document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active', j===i));
   curTab=i;
-  if(i===3) renderSaves();
+  if(i===2) renderSaves();
 }
 function byId(id){ return partits.find(p=>p.id===id); }
 function totalAss(){ return partits.reduce((s,p)=>s+p.escons,0); }
@@ -465,7 +517,9 @@ function renderPartits(){
   });
 }
 function renderPacte(){
-  const list=document.getElementById('pacte-list'); list.innerHTML='';
+  // Renderitzar els dos pactòmetres
+  ['pacte-list','pacte-list-sala'].forEach(function(listId){
+    const list=document.getElementById(listId); if(!list) return; list.innerHTML='';
   partits.filter(p=>p.escons>0).forEach(p=>{
     const it=document.createElement('div'); it.className='pacte-item';
     const chk=document.createElement('input'); chk.type='checkbox'; chk.className='pchk'; chk.checked=!!pacteChecked[p.id];
@@ -475,17 +529,25 @@ function renderPacte(){
     const nm=document.createElement('label'); nm.className='pname'; nm.textContent=p.nom; nm.onclick=()=>{ chk.checked=!chk.checked; chk.dispatchEvent(new Event('change')); };
     const st=document.createElement('span'); st.className='pseats'; st.textContent=p.escons;
     it.appendChild(chk); it.appendChild(dot); it.appendChild(nm); it.appendChild(st); list.appendChild(it);
+    });
   });
   updatePacte();
 }
 function updatePacte(){
   let total=0; partits.forEach(p=>{ if(pacteChecked[p.id]&&p.escons>0) total+=p.escons; });
-  const tot=document.getElementById('ptotal'), bar=document.getElementById('pb'), badge=document.getElementById('pstatus');
-  tot.textContent=total+' / '+TOTAL;
-  bar.style.width=Math.min(100,Math.round(total/TOTAL*100))+'%';
-  if(!total){ bar.style.background='rgba(255,255,255,.08)'; badge.style.display='none'; }
-  else if(total>=ABS){ bar.style.background='var(--abs)'; badge.style.display='inline-block'; badge.className='pstatus s-yes'; badge.textContent='Majoria absoluta'; }
-  else { bar.style.background='#f59e0b'; badge.style.display='inline-block'; badge.className='pstatus s-no'; badge.textContent='Falten '+(ABS-total)+' escons'; }
+  // Actualitzar els dos pactòmetres (pestanya Pactes + columna dreta Sala)
+  ['','sala'].forEach(function(sfx){
+    const s = sfx ? '-'+sfx : '';
+    const tot=document.getElementById('ptotal'+s);
+    const bar=document.getElementById('pb'+s);
+    const badge=document.getElementById('pstatus'+s);
+    if(!tot) return;
+    tot.textContent=total+' / '+TOTAL;
+    if(bar) bar.style.width=Math.min(100,Math.round(total/TOTAL*100))+'%';
+    if(!total){ if(bar) bar.style.background='rgba(255,255,255,.08)'; if(badge) badge.style.display='none'; }
+    else if(total>=ABS){ if(bar) bar.style.background='var(--abs)'; if(badge){ badge.style.display='inline-block'; badge.className='pstatus s-yes'; badge.textContent='Majoria absoluta'; } }
+    else { if(bar) bar.style.background='#f59e0b'; if(badge){ badge.style.display='inline-block'; badge.className='pstatus s-no'; badge.textContent='Falten '+(ABS-total)+' escons'; } }
+  });
 }
 function renderAll(){ renderStats(); renderPartits(); renderAlcalde(); renderSala(); renderPacte(); }
 function changeEscons(id,delta){
