@@ -43,7 +43,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .tab-bar {
   position:fixed;
   bottom:0; left:0; right:0; z-index:100;
-  height:60px;
+  height:74px;
   background:rgba(10,12,20,.97);
   border-top:1px solid var(--border);
   display:flex; align-items:center;
@@ -51,11 +51,11 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 }
 .tab-btn {
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:3px; background:none; border:none; cursor:pointer;
-  color:var(--muted); font-size:.55rem; font-weight:600; font-family:inherit;
+  gap:4px; background:none; border:none; cursor:pointer;
+  color:var(--muted); font-size:.58rem; font-weight:600; font-family:inherit;
   letter-spacing:.04em; text-transform:uppercase; touch-action:manipulation;
 }
-.tab-btn svg { width:22px; height:22px; stroke:currentColor; fill:none; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.tab-btn svg { width:28px; height:28px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active svg { stroke:var(--accent); }
 
@@ -63,8 +63,8 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .screen {
   display:none; flex-direction:column; gap:.75rem;
   padding-left:1rem; padding-right:1rem;
-  padding-top: 115px;
-  padding-bottom: 80px;
+  padding-top: 128px;
+  padding-bottom: 90px;
   /* Ocupar tota la pantalla disponible */
   min-height: 100vh;
   min-height: 100dvh;
@@ -73,6 +73,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .screen.active { display:flex; }
 /* La sala s'expandeix per omplir l'espai */
 #s0 { justify-content: space-between; }
+#s0 .btn-ai { margin-top: -.25rem; }
 
 /* CARDS */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
