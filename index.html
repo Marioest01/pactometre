@@ -41,9 +41,12 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 
 /* TAB BAR */
 .tab-bar {
-  position:fixed; bottom:0; left:0; right:0; z-index:100;
-  height: calc(var(--tab-h) + env(safe-area-inset-bottom,0px));
-  padding-bottom: env(safe-area-inset-bottom,0px);
+  position:fixed;
+  bottom:0;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left:0; right:0; z-index:100;
+  height: var(--tab-h);
+  padding-bottom: 0;
   background:rgba(10,12,20,.97);
   border-top:1px solid var(--border);
   display:flex; align-items:stretch;
@@ -63,11 +66,16 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .screen {
   display:none; flex-direction:column; gap:.75rem;
   padding-left:1rem; padding-right:1rem;
-  /* padding-top: altura header + safe-area-top + marge */
   padding-top: calc(var(--header-h) + env(safe-area-inset-top, 44px) + .85rem);
-  padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 34px) + .75rem);
+  padding-bottom: calc(var(--tab-h) + .75rem);
+  /* Ocupar tota la pantalla disponible */
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
 }
 .screen.active { display:flex; }
+/* La sala s'expandeix per omplir l'espai */
+#s0 { justify-content: space-between; }
 
 /* CARDS */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
