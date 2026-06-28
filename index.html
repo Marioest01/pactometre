@@ -24,13 +24,18 @@ html, body{
   margin:0;
   padding:0;
   height:100%;
+  width:100%;
   background:#0a0c14;
+  overflow:hidden;
 }
 body{
-  height:100dvh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display:flex;
   flex-direction:column;
-  overflow:hidden;
   font-family:'Inter',sans-serif;
   color:var(--text);
 }
@@ -42,6 +47,7 @@ body{
   background:#0a0c14;
   border-bottom:1px solid var(--border);
   padding-top: env(safe-area-inset-top, 0px);
+  flex-shrink: 0;
 }
 #header-inner {
   height:56px;
@@ -61,7 +67,8 @@ body{
   z-index:200;
   background:#0a0c14;
   border-top:1px solid var(--border);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-bottom: env(safe-area-inset-bottom, 20px); /* Forzamos un fallback de 20px si falla en iOS standalone */
+  flex-shrink: 0;
 }
 #tabbar-inner {
   height:60px;
@@ -213,13 +220,12 @@ body{
 .ai-result .loading { color:var(--muted); font-style:italic; }
 
 /* TOAST */
-.toast { position:fixed; bottom:calc(env(safe-area-inset-bottom,0px) + 80px); left:50%; transform:translateX(-50%) translateY(10px); background:#1e2235; border:1px solid var(--border2); color:var(--text); padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap; }
+.toast { position:fixed; bottom:calc(env(safe-area-inset-bottom, 0px) + 80px); left:50%; transform:translateX(-50%) translateY(10px); background:#1e2235; border:1px solid var(--border2); color:var(--text); padding:7px 16px; border-radius:999px; font-size:.72rem; font-weight:600; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:300; white-space:nowrap; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div id="header">
   <div id="header-inner">
     <div>
@@ -230,10 +236,8 @@ body{
   </div>
 </div>
 
-<!-- CONTENT -->
 <div id="content">
 
-  <!-- S0: SALA -->
   <div class="screen active" id="s0">
     <div class="stats-row">
       <div class="stat-card"><div class="stat-n" id="stat-ass">0</div><div class="stat-l">Total</div></div>
@@ -274,7 +278,6 @@ body{
   
   </div>
 
-  <!-- S1: PARTITS -->
   <div class="screen" id="s1">
     <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
     <button class="btn-ai" onclick="openAI('escenari')">
@@ -293,7 +296,6 @@ body{
     </div>
   </div>
 
-  <!-- S2: PACTES -->
   <div class="screen" id="s2">
     <div class="card">
       <div class="card-title">Alcalde / Alcaldessa</div>
@@ -322,7 +324,6 @@ body{
   
   </div>
 
-  <!-- S3: GUARDATS -->
   <div class="screen" id="s3">
     <div class="card">
       <div class="card-title">Desar escenari actual</div>
@@ -345,10 +346,7 @@ body{
   
   </div>
 
-</div><!-- /content -->
-
-<!-- TAB BAR -->
-<div id="tabbar">
+</div><div id="tabbar">
   <div id="tabbar-inner">
     <button class="tab-btn active" id="tab0" onclick="setTab(0)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
@@ -369,7 +367,6 @@ body{
   </div>
 </div>
 
-<!-- MODAL IA -->
 <div class="ai-modal-bg" id="ai-modal-bg" onclick="closeAIifBg(event)">
   <div class="ai-modal">
     <div class="ai-modal-header">
@@ -556,7 +553,7 @@ function recomanarPacte(){
   var actius=partits.filter(function(p){ return p.escons>0; });
   if(!actius.length) return '<span style="color:var(--muted)">Primer assigna regidors als partits.</span>';
   var opcions=[
-    {ids:['ERC','PSC','IM'],titol:'Continuïtat del pacte actual',explic:'ERC, PSC i Impulsem ja han governat junts. Fórmula coneguda amb menys friccions.',alcalde_id:'ERC'},
+    {ids:['ERC','PSC','IM'],titol:'Continuïtat del pacte actual',explic:'ERC, PSC i Impulsem ya han governat junts. Fórmula coneguda amb menys friccions.',alcalde_id:'ERC'},
     {ids:['ERC','PSC','CUP'],titol:'Pacte esquerres eixamplat',explic:'Si la CUP entra amb prou força, podria substituir Impulsem. Possible si ERC fa de mediador.',alcalde_id:'ERC'},
     {ids:['ERC','CUP','IM'],titol:'Bloc independentista esquerres (sense PSC)',explic:'Govern en minoria independentista. Estable si el PSC s\u2019abst\u00e9 en votacions clau.',alcalde_id:'ERC'},
     {ids:['PSC','ECP','IM'],titol:'Govern esquerres no independentista',explic:'Si el PSC és la força més votada, podria liderar un govern amb ECP i Impulsem.',alcalde_id:'PSC'},
@@ -668,8 +665,6 @@ if('serviceWorker' in navigator){
 
 renderAll();
 renderSaves();
-
-
 </script>
 </body>
 </html>
