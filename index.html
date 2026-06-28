@@ -33,7 +33,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
   z-index:200;
   background:#0a0c14;
   border-bottom:1px solid var(--border);
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: env(safe-area-inset-top, 47px);
 }
 #header-inner {
   height:56px;
@@ -71,11 +71,13 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active svg { stroke:var(--accent); }
 
-/* ── CONTENT: posicionat per JS, top inicial conservador ── */
+/* ── CONTENT ── */
 #content {
   position:fixed;
   left:0; right:0;
-  top: 110px;
+  /* top = safe-area-top + header-inner (56px) */
+  top: calc(env(safe-area-inset-top, 47px) + 56px);
+  /* bottom = tabbar (60px) */
   bottom: 60px;
   overflow:hidden;
 }
@@ -664,21 +666,7 @@ if('serviceWorker' in navigator){
 renderAll();
 renderSaves();
 
-// Layout: executar en cada frame fins que el header tingui altura
-(function fix(){
-  var h = document.getElementById('header');
-  var c = document.getElementById('content');
-  if(!h || !c){ requestAnimationFrame(fix); return; }
-  var hh = h.getBoundingClientRect().height;
-  if(hh < 10){ requestAnimationFrame(fix); return; }
-  c.style.top = hh + 'px';
-  c.style.bottom = '60px';
-})();
-window.addEventListener('resize', function(){
-  var h = document.getElementById('header');
-  var c = document.getElementById('content');
-  if(h && c) c.style.top = h.getBoundingClientRect().height + 'px';
-});
+
 </script>
 </body>
 </html>
