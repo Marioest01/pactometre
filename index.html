@@ -71,10 +71,12 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active svg { stroke:var(--accent); }
 
-/* ── CONTENT: posicionat per JS ── */
+/* ── CONTENT: posicionat per JS, top inicial conservador ── */
 #content {
   position:fixed;
   left:0; right:0;
+  top: 110px;
+  bottom: 60px;
   overflow:hidden;
 }
 
