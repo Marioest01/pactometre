@@ -63,7 +63,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); opacity:0; transition:
 .screen {
   display:none; flex-direction:column; gap:.75rem;
   padding-left:1rem; padding-right:1rem;
-  padding-top: 128px;
+  padding-top: 0;
   padding-bottom: 90px;
   /* Ocupar tota la pantalla disponible */
   min-height: 100vh;
@@ -413,21 +413,21 @@ let partits=[
 
 let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, curTab=0;
 
-// Fix padding: mesurar header real i aplicar abans de mostrar la UI
-document.addEventListener('DOMContentLoaded', function(){
+// Fix padding: aplicar immediatament sense esperar DOMContentLoaded
+(function(){
   function applyPadding(){
     var header = document.querySelector('.app-header');
-    if(!header) return;
+    if(!header){ requestAnimationFrame(applyPadding); return; }
     var h = header.getBoundingClientRect().height;
-    if(h < 10){ setTimeout(applyPadding, 50); return; }
+    if(h < 20){ requestAnimationFrame(applyPadding); return; }
     var pt = Math.round(h) + 14;
     document.querySelectorAll('.screen').forEach(function(s){
       s.style.paddingTop = pt + 'px';
     });
     document.body.style.opacity = '1';
   }
-  applyPadding();
-});
+  requestAnimationFrame(applyPadding);
+})();
 
 /* TABS */
 function setTab(i){
