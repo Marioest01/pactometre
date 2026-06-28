@@ -42,14 +42,11 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 /* TAB BAR */
 .tab-bar {
   position:fixed;
-  bottom:0;
-  bottom: env(safe-area-inset-bottom, 0px);
-  left:0; right:0; z-index:100;
-  height: var(--tab-h);
-  padding-bottom: 0;
+  bottom:0; left:0; right:0; z-index:100;
+  height:60px;
   background:rgba(10,12,20,.97);
   border-top:1px solid var(--border);
-  display:flex; align-items:stretch;
+  display:flex; align-items:center;
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
 }
 .tab-btn {
@@ -66,8 +63,8 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .screen {
   display:none; flex-direction:column; gap:.75rem;
   padding-left:1rem; padding-right:1rem;
-  padding-top: calc(var(--header-h) + env(safe-area-inset-top, 44px) + .85rem);
-  padding-bottom: calc(var(--tab-h) + .75rem);
+  padding-top: 115px;
+  padding-bottom: 80px;
   /* Ocupar tota la pantalla disponible */
   min-height: 100vh;
   min-height: 100dvh;
