@@ -21,7 +21,7 @@
   --header-h:56px; --tab-h:60px;
 }
 html, body { margin:0; padding:0; background:#0a0c14; }
-body { font-family:'Inter',sans-serif; color:var(--text); }
+body { font-family:'Inter',sans-serif; color:var(--text); opacity:0; transition:opacity .15s; }
 
 /* HEADER */
 .app-header {
@@ -413,7 +413,21 @@ let partits=[
 
 let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, curTab=0;
 
-// No cal JS per al padding — es gestiona via CSS
+// Fix padding: mesurar header real i aplicar abans de mostrar la UI
+document.addEventListener('DOMContentLoaded', function(){
+  function applyPadding(){
+    var header = document.querySelector('.app-header');
+    if(!header) return;
+    var h = header.getBoundingClientRect().height;
+    if(h < 10){ setTimeout(applyPadding, 50); return; }
+    var pt = Math.round(h) + 14;
+    document.querySelectorAll('.screen').forEach(function(s){
+      s.style.paddingTop = pt + 'px';
+    });
+    document.body.style.opacity = '1';
+  }
+  applyPadding();
+});
 
 /* TABS */
 function setTab(i){
