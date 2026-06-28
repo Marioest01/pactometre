@@ -21,15 +21,14 @@
   --header-h:56px; --tab-h:60px;
 }
 html, body { margin:0; padding:0; background:#0a0c14; }
-body { font-family:'Inter',sans-serif; color:var(--text); opacity:0; transition:opacity .15s; }
+body { font-family:'Inter',sans-serif; color:var(--text); }
 
 /* HEADER */
 .app-header {
   position:fixed; top:0; left:0; right:0; z-index:100;
-  height: calc(var(--header-h) + env(safe-area-inset-top,0px));
-  padding: env(safe-area-inset-top,0px) 1rem 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: 1rem; padding-right: 1rem; padding-bottom: .6rem;
   display:flex; align-items:flex-end; justify-content:space-between;
-  padding-bottom:.6rem;
   background:rgba(10,12,20,.97);
   border-bottom:1px solid var(--border);
   backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
@@ -63,17 +62,11 @@ body { font-family:'Inter',sans-serif; color:var(--text); opacity:0; transition:
 .screen {
   display:none; flex-direction:column; gap:.75rem;
   padding-left:1rem; padding-right:1rem;
-  padding-top: 0;
-  padding-bottom: 90px;
-  /* Ocupar tota la pantalla disponible */
-  min-height: 100vh;
-  min-height: 100dvh;
+  padding-top: 120px; /* valor inicial conservador, JS l'ajusta */
+  padding-bottom: 88px;
   box-sizing: border-box;
 }
 .screen.active { display:flex; }
-/* La sala s'expandeix per omplir l'espai */
-#s0 { justify-content: space-between; }
-#s0 .btn-ai { margin-top: -.25rem; }
 
 /* CARDS */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
@@ -413,21 +406,7 @@ let partits=[
 
 let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, curTab=0;
 
-// Fix padding: aplicar immediatament sense esperar DOMContentLoaded
-(function(){
-  function applyPadding(){
-    var header = document.querySelector('.app-header');
-    if(!header){ requestAnimationFrame(applyPadding); return; }
-    var h = header.getBoundingClientRect().height;
-    if(h < 20){ requestAnimationFrame(applyPadding); return; }
-    var pt = Math.round(h) + 14;
-    document.querySelectorAll('.screen').forEach(function(s){
-      s.style.paddingTop = pt + 'px';
-    });
-    document.body.style.opacity = '1';
-  }
-  requestAnimationFrame(applyPadding);
-})();
+
 
 /* TABS */
 function setTab(i){
