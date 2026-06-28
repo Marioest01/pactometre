@@ -20,8 +20,14 @@
   --r:12px; --rs:8px;
   --header-h:56px; --tab-h:60px;
 }
-html, body { margin:0; padding:0; background:#0a0c14; height:100%; overflow:hidden; }
-body { font-family:'Inter',sans-serif; color:var(--text); display:flex; flex-direction:column; height:100%; height:100dvh; }
+html { margin:0; padding:0; background:#0a0c14; }
+body {
+  font-family:'Inter',sans-serif; color:var(--text);
+  margin:0; padding:0; background:#0a0c14;
+  display:flex; flex-direction:column;
+  height: 100dvh;
+  overflow: hidden;
+}
 
 /* HEADER */
 .app-header {
@@ -63,11 +69,15 @@ body { font-family:'Inter',sans-serif; color:var(--text); display:flex; flex-dir
   display:none; flex-direction:column; gap:.75rem;
   padding:1rem;
   overflow-y:auto; overflow-x:hidden;
-  flex:1;
+  flex:1; min-height:0;
   -webkit-overflow-scrolling:touch;
 }
 .screen.active { display:flex; }
-#s0.active { justify-content:space-between; }
+/* Sala: no scroll, distribueix l'espai verticalment */
+#s0 {
+  overflow:hidden;
+  justify-content:space-between;
+}
 
 /* CARDS */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
