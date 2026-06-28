@@ -20,20 +20,28 @@
   --r:12px; --rs:8px;
 }
 
-html, body {
-  margin:0; padding:0;
+html, body{
+  margin:0;
+  padding:0;
+  height:100%;
   background:#0a0c14;
 }
-body { font-family:'Inter',sans-serif; color:var(--text); }
+body{
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  font-family:'Inter',sans-serif;
+  color:var(--text);
+}
 
 /* ── HEADER fixed ── */
 #header {
-  position:fixed;
-  top:0; left:0; right:0;
+  position:relative;
   z-index:200;
   background:#0a0c14;
   border-bottom:1px solid var(--border);
-  padding-top: env(safe-area-inset-top, 47px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 #header-inner {
   height:56px;
@@ -49,22 +57,19 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 
 /* ── TAB BAR fixed ── */
 #tabbar {
-  position:fixed;
-  left:0; right:0;
-  bottom:0;
+  position:relative;
   z-index:200;
-  padding-bottom: env(safe-area-inset-bottom,0px);
   background:#0a0c14;
   border-top:1px solid var(--border);
+  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 #tabbar-inner {
-  height:72px;
+  height:60px;
   display:flex;
   align-items:stretch;
 }
 .tab-btn {
-  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-  padding-bottom:10px;
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:4px; background:none; border:none; cursor:pointer;
   color:var(--muted); font-size:.55rem; font-weight:600; font-family:inherit;
   letter-spacing:.04em; text-transform:uppercase; touch-action:manipulation;
@@ -74,13 +79,9 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .tab-btn.active svg { stroke:var(--accent); }
 
 /* ── CONTENT ── */
-#content {
-  position:fixed;
-  left:0; right:0;
-  /* top = safe-area-top + header-inner (56px) */
-  top: calc(env(safe-area-inset-top, 47px) + 56px);
-  /* bottom = tabbar (60px) */
-  bottom: calc(60px + env(safe-area-inset-bottom,0px));
+#content{
+  flex:1;
+  position:relative;
   overflow:hidden;
 }
 
@@ -95,7 +96,6 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
   flex-direction:column;
   gap:.8rem;
   padding:1rem;
-  padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px));
 }
 .screen.active { display:flex; }
 
@@ -271,6 +271,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5L16 21H8l2-11.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/><path d="M9 21h6"/></svg>
       Generar escenari amb IA
     </button>
+  
   </div>
 
   <!-- S1: PARTITS -->
@@ -318,6 +319,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
       Recomanar pacte amb IA
     </button>
+  
   </div>
 
   <!-- S3: GUARDATS -->
@@ -340,6 +342,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
         Crear nou escenari
       </button>
     </div>
+  
   </div>
 
 </div><!-- /content -->
