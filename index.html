@@ -65,19 +65,27 @@ body {
 .tab-btn.active svg { stroke:var(--accent); }
 
 /* SCREENS */
+/* Wrapper que ocupa tot l'espai entre header i tab-bar */
+#screens-wrapper {
+  flex:1;
+  min-height:0;
+  position:relative;
+  overflow:hidden;
+}
+
 .screen {
-  display:none; flex-direction:column; gap:.75rem;
+  position:absolute;
+  inset:0;
+  display:none;
+  flex-direction:column;
+  gap:.75rem;
   padding:1rem;
-  overflow-y:auto; overflow-x:hidden;
-  flex:1; min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
+  box-sizing:border-box;
 }
 .screen.active { display:flex; }
-/* Sala: no scroll, distribueix l'espai verticalment */
-#s0 {
-  overflow:hidden;
-  justify-content:space-between;
-}
 
 /* CARDS */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .85rem; }
@@ -256,6 +264,7 @@ body {
   <div class="badge-abs">Majoria: 13</div>
 </div>
 
+<div id="screens-wrapper">
 <!-- S0: SALA -->
 <div class="screen active" id="s0">
   <div class="stats-row">
@@ -365,6 +374,7 @@ body {
   </div>
 </div>
 
+</div><!-- /screens-wrapper -->
 <!-- TAB BAR -->
 <nav class="tab-bar">
   <button class="tab-btn active" id="tab0" onclick="setTab(0)">
