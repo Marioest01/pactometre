@@ -20,25 +20,16 @@
   --r:12px; --rs:8px;
 }
 
-html {
+html, body {
   margin:0; padding:0;
-  height:100%;
   background:#0a0c14;
 }
-body {
-  font-family:'Inter',sans-serif; color:var(--text);
-  margin:0; padding:0;
-  height:100%;
-  height:100dvh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  background:#0a0c14;
-}
+body { font-family:'Inter',sans-serif; color:var(--text); }
 
 /* ── HEADER fixed ── */
 #header {
-  flex-shrink:0;
+  position:fixed;
+  top:0; left:0; right:0;
   z-index:200;
   background:#0a0c14;
   border-bottom:1px solid var(--border);
@@ -58,11 +49,12 @@ body {
 
 /* ── TAB BAR fixed ── */
 #tabbar {
-  flex-shrink:0;
+  position:fixed;
+  left:0; right:0;
+  bottom:0;
   z-index:200;
   background:#0a0c14;
   border-top:1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 #tabbar-inner {
   height:60px;
@@ -79,11 +71,11 @@ body {
 .tab-btn.active { color:var(--accent); }
 .tab-btn.active svg { stroke:var(--accent); }
 
-/* ── CONTENT: espai entre header i tabbar ── */
+/* ── CONTENT: posicionat per JS ── */
 #content {
-  flex:1;
+  position:fixed;
+  left:0; right:0;
   overflow:hidden;
-  position:relative;
 }
 
 /* ── SCREENS ── */
@@ -669,6 +661,30 @@ if('serviceWorker' in navigator){
 
 renderAll();
 renderSaves();
+
+// Posicionar header, content i tabbar amb píxels reals
+function layoutApp(){
+  var headerEl = document.getElementById('header');
+  var contentEl = document.getElementById('content');
+  var tabbarEl = document.getElementById('tabbar');
+
+  // Mesurar l'alçada real del header (inclou safe-area-top)
+  var headerH = headerEl.getBoundingClientRect().height;
+  // Alçada total de la finestra
+  var winH = window.innerHeight;
+  // Alçada de la tabbar (60px fixos)
+  var tabH = 60;
+
+  // Aplicar
+  contentEl.style.top = headerH + 'px';
+  contentEl.style.bottom = tabH + 'px';
+  tabbarEl.style.bottom = '0px';
+}
+
+// Executar immediatament i després de cada resize
+layoutApp();
+window.addEventListener('resize', layoutApp);
+window.addEventListener('orientationchange', function(){ setTimeout(layoutApp, 200); });
 </script>
 </body>
 </html>
