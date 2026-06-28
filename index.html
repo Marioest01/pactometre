@@ -20,22 +20,28 @@
   --r:12px; --rs:8px;
 }
 
-html, body {
+html {
   margin:0; padding:0;
-  width:100%; height:100%;
+  height:100%;
   background:#0a0c14;
-  overflow:hidden;
 }
-body { font-family:'Inter',sans-serif; color:var(--text); }
+body {
+  font-family:'Inter',sans-serif; color:var(--text);
+  margin:0; padding:0;
+  height:100%;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:#0a0c14;
+}
 
 /* ── HEADER fixed ── */
 #header {
-  position:fixed;
-  top:0; left:0; right:0;
+  flex-shrink:0;
   z-index:200;
   background:#0a0c14;
   border-bottom:1px solid var(--border);
-  /* safe area per a la Dynamic Island / muesca */
   padding-top: env(safe-area-inset-top, 0px);
 }
 #header-inner {
@@ -52,12 +58,10 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 
 /* ── TAB BAR fixed ── */
 #tabbar {
-  position:fixed;
-  bottom:0; left:0; right:0;
+  flex-shrink:0;
   z-index:200;
   background:#0a0c14;
   border-top:1px solid var(--border);
-  /* safe area per a la barra d'inici de l'iPhone */
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 #tabbar-inner {
@@ -77,13 +81,9 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 
 /* ── CONTENT: espai entre header i tabbar ── */
 #content {
-  position:fixed;
-  left:0; right:0;
-  /* top = header height = safe-area-top + 56px */
-  top: calc(env(safe-area-inset-top, 0px) + 56px);
-  /* bottom = tabbar height = safe-area-bottom + 60px */
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 60px);
+  flex:1;
   overflow:hidden;
+  position:relative;
 }
 
 /* ── SCREENS ── */
