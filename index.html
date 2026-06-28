@@ -19,6 +19,7 @@
   --ai:#a855f7; --ai-bg:rgba(168,85,247,.12); --ai-border:rgba(168,85,247,.3);
   --r:12px; --rs:8px;
   --header-h:56px; --tab-h:60px;
+  --header-real: calc(var(--header-h) + env(safe-area-inset-top,0px));
 }
 html, body { margin:0; padding:0; background:#0a0c14; }
 body { font-family:'Inter',sans-serif; color:var(--text); }
@@ -63,6 +64,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 .screen {
   display:none; flex-direction:column; gap:.75rem;
   padding-left:1rem; padding-right:1rem;
+  padding-top: calc(var(--header-real, calc(var(--header-h) + env(safe-area-inset-top,0px))) + .75rem);
   padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom,0px) + .75rem);
 }
 .screen.active { display:flex; }
@@ -245,7 +247,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 </div>
 
 <!-- S0: SALA -->
-<div class="screen active" id="s0" style="padding-top:0;">
+<div class="screen active" id="s0">
   <div class="stats-row">
     <div class="stat-card"><div class="stat-n" id="stat-ass">25</div><div class="stat-l">Total</div></div>
     <div class="stat-card"><div class="stat-n" id="stat-ll">0</div><div class="stat-l">Lliures</div></div>
@@ -285,7 +287,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 </div>
 
 <!-- S1: PARTITS -->
-<div class="screen" id="s1" style="padding-top:0;">
+<div class="screen" id="s1">
   <div style="display:flex;flex-direction:column;gap:7px;" id="partits-grid"></div>
   <button class="btn-ai" onclick="openAI('escenari')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5L16 21H8l2-11.5C8.8 8.8 8 7.5 8 6a4 4 0 0 1 4-4z"/><path d="M9 21h6"/></svg>
@@ -304,7 +306,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 </div>
 
 <!-- S2: PACTES -->
-<div class="screen" id="s2" style="padding-top:0;">
+<div class="screen" id="s2">
   <div class="card">
     <div class="card-title">Alcalde / Alcaldessa</div>
     <div class="alcalde-row">
@@ -332,7 +334,7 @@ body { font-family:'Inter',sans-serif; color:var(--text); }
 </div>
 
 <!-- S3: GUARDATS -->
-<div class="screen" id="s3" style="padding-top:0;">
+<div class="screen" id="s3">
   <div class="card">
     <div class="card-title">Desar escenari actual</div>
     <div class="save-name-row">
@@ -405,17 +407,18 @@ let partits=[
 
 let alcaldeManualId=null, tieOpen=false, pacteChecked={}, activeSlotId=null, curTab=0;
 
-// FIX iOS PWA: ajusta el padding-top de les screens quan la pàgina carrega
+// FIX iOS PWA: padding-top calculat via CSS var, aplicat abans de pintar
 function fixScreenPadding(){
-  const headerH = document.querySelector('.app-header').getBoundingClientRect().height;
-  document.querySelectorAll('.screen').forEach(s=>{
-    s.style.paddingTop = (headerH + 12) + 'px';
-  });
+  const h = document.querySelector('.app-header').getBoundingClientRect().height;
+  if(h > 0){
+    document.documentElement.style.setProperty('--header-real', h + 'px');
+  }
 }
-window.addEventListener('load', fixScreenPadding);
+// Aplicar immediatament, sense esperar load
+fixScreenPadding();
+// I també quan canvia la mida
 window.addEventListener('resize', fixScreenPadding);
-// Cridar-ho també de seguida
-document.addEventListener('DOMContentLoaded', fixScreenPadding);
+window.addEventListener('orientationchange', ()=>setTimeout(fixScreenPadding,150));
 
 /* TABS */
 function setTab(i){
@@ -564,49 +567,201 @@ function openAI(mode){
 function closeAI(){ document.getElementById('ai-modal-bg').classList.remove('show'); }
 function closeAIifBg(e){ if(e.target===document.getElementById('ai-modal-bg')) closeAI(); }
 
-async function callAI(mode){
-  const result = document.getElementById('ai-result');
-  const currentState = partits.map(p=>`${p.nom}: ${p.escons} escons`).join(', ');
-
-  let prompt = '';
-
-  if(mode === 'escenari'){
-    prompt = `Ets un expert en política municipal de Manresa. Els partits que es presenten a les eleccions municipals de Manresa 2027 són: ERC, Junts+FNC, PSC, CUP, Impulsem, Vox, Aliança Catalana i En Comú Podem. El consistori té 25 regidors i la majoria absoluta és de 13. Basant-te en les tendències electorals actuals a Manresa i Catalunya, proposa un escenari electoral realista indicant quants regidors obtindria cada partit (han de sumar exactament 25). Explica breument el raonament. Sigues concís (màxim 120 paraules). Acaba indicant quin partit tindria l'alcaldia.`;
-  } else {
-    prompt = `Ets un expert en política municipal de Manresa. La composició actual del consistori és: ${currentState}.\n\nBasat en:\n1. La proximitat ideològica entre els partits\n2. Els pactes que hi ha hagut histèricament a Manresa (ERC ha governat, ha pactat amb PSC i amb partits independentistes)\n3. Les relacions actuals entre candidats a Manresa\n4. La situació política a Catalunya\n\nProposa el pacte de govern més probable per assolir la majoria absoluta (13 regidors). Si és impossible per desavinences ideològiques arribar a majoria absoluta, digues-ho i proposa el govern en minoria més viable. Explica breument el raonament. Sigues concís (màxim 150 paraules).`;
-  }
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content?.map(c=>c.text||'').join('') || 'No s\'ha pogut obtenir resposta.';
-
-    // Formatear el text
-    let html = text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>');
-    result.innerHTML = '<p>' + html + '</p>';
-
-    // Si és escenari, aplicar els escons automàticament
+function callAI(mode){
+  var result = document.getElementById('ai-result');
+  setTimeout(function(){
     if(mode === 'escenari'){
-      // Intentar parsejar els escons del text
-      
+      result.innerHTML = generarEscenari();
+    } else {
+      result.innerHTML = recomanarPacte();
     }
-  } catch(e){
-    result.innerHTML = '<span style="color:#f87171">Error connectant amb la IA. Comprova la connexió.</span>';
-  }
+    renderAll();
+  }, 600);
 }
 
 
+
+function generarEscenari(){
+  const escenaris = [
+    { escons:{ERC:7,JFNC:7,PSC:4,CUP:3,IM:0,VOX:2,AC:2,ECP:0},
+      titol:'Escenari central (més probable)',
+      desc:'ERC i Junts+FNC es mantenen com a forces principals. PSC consolida el seu espai. CUP resisteix amb 3 regidors. Aliança Catalana entra amb força.',
+      alcalde:'ERC o Junts+FNC (empat — depèn de pactes)' },
+    { escons:{ERC:8,JFNC:7,PSC:5,CUP:3,IM:0,VOX:1,AC:1,ECP:0},
+      titol:'Escenari favorable a l\'esquerra independentista',
+      desc:'ERC creix aprofitant el desgast de Junts. PSC puja per l\'efecte Illa. VOX i AC perden força davant partits consolidats.',
+      alcalde:'ERC (força més votada)' },
+    { escons:{ERC:6,JFNC:8,PSC:4,CUP:3,IM:1,VOX:1,AC:2,ECP:0},
+      titol:'Escenari favorable a Junts+FNC',
+      desc:'Junts+FNC aprofita el seu ancoratge local i creix. ERC pateix desgast. Impulsem recupera presència. Aliança Catalana consolida 2 regidors.',
+      alcalde:'Junts+FNC (força més votada)' },
+    { escons:{ERC:7,JFNC:6,PSC:5,CUP:2,IM:1,VOX:2,AC:2,ECP:0},
+      titol:'Escenari de fragmentació',
+      desc:'Cap força destaca clarament. PSC puja per efecte Illa. CUP perd un regidor. Aliança Catalana aguanta. Impulsem recupera presència mínima.',
+      alcalde:'ERC per un regidor d\'avantatge' },
+  ];
+
+  const sc = escenaris[Math.floor(Math.random() * escenaris.length)];
+
+  // Aplicar escons
+  partits.forEach(function(p){
+    p.escons = (sc.escons[p.id] !== undefined) ? sc.escons[p.id] : 0;
+  });
+  alcaldeManualId = null; tieOpen = false;
+
+  // Construir HTML
+  var html = '<div style="margin-bottom:.6rem;padding:.5rem .7rem;background:var(--ai-bg);border:1px solid var(--ai-border);border-radius:8px;">';
+  html += '<div style="font-size:.75rem;font-weight:700;color:var(--ai);margin-bottom:.3rem;">' + sc.titol + '</div>';
+  html += '</div>';
+  html += '<div style="margin-bottom:.75rem;">';
+  partits.forEach(function(p){
+    if(p.escons <= 0) return;
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);">';
+    html += '<div style="width:10px;height:10px;border-radius:2px;background:' + p.color + ';flex-shrink:0;"></div>';
+    html += '<span style="flex:1;font-size:.78rem;">' + p.nom + '</span>';
+    html += '<span style="font-family:Space Grotesk,sans-serif;font-weight:700;font-size:.9rem;color:' + p.color + ';">' + p.escons + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div style="font-size:.75rem;line-height:1.6;color:var(--text);margin-bottom:.5rem;">' + sc.desc + '</div>';
+  html += '<div style="font-size:.74rem;color:var(--gold);"><strong>Alcaldia:</strong> ' + sc.alcalde + '</div>';
+  html += '<div style="margin-top:.6rem;font-size:.63rem;color:var(--muted);">✓ Escenari aplicat al consistori</div>';
+  return html;
+}
+
+function recomanarPacte(){
+  var actius = partits.filter(function(p){ return p.escons > 0; });
+  if(!actius.length){
+    return '<span style="color:var(--muted)">Primer assigna regidors als partits.</span>';
+  }
+
+  // Opcions de pacte realistes per Manresa, ordenades per viabilitat
+  // Basades en: historial (ERC+PSC+IM al 2023), tensió ERC-Junts, rol clau del PSC
+  var opcionsBase = [
+    {
+      ids: ['ERC','PSC','IM'],
+      titol: 'Continuïtat del pacte actual',
+      explic: 'Repetició del govern del mandat 2023-2027. ERC, PSC i Impulsem ja han demostrat que poden governar junts. És la fórmula més coneguda i amb menys friccions internes.',
+      alcalde_id: 'ERC'
+    },
+    {
+      ids: ['ERC','PSC','CUP'],
+      titol: 'Pacte esquerres eixamplat',
+      explic: 'Si la CUP entra amb prou força, podria substituir Impulsem com a soci. Més difícil per les reticències de la CUP envers el PSC, però possible si ERC fa de mediador.',
+      alcalde_id: 'ERC'
+    },
+    {
+      ids: ['ERC','CUP','IM'],
+      titol: 'Bloc independentista esquerres (sense PSC)',
+      explic: 'Govern en minoria independentista. ERC, CUP i Impulsem han col·laborat ideol\u00f2gicament. No arriba a majoria, per\u00f2 \u00e9s estable si el PSC s\u2019abst\u00e9 en votacions clau.',
+      alcalde_id: 'ERC'
+    },
+    {
+      ids: ['PSC','ECP','IM'],
+      titol: 'Govern esquerres no independentista',
+      explic: 'Si el PSC \u00e9s la for\u00e7a m\u00e9s votada, podria liderar un govern amb ECP i Impulsem. Poc probable si ERC mant\u00e9 la prim\u00e0cia.',
+      alcalde_id: 'PSC'
+    },
+    {
+      ids: ['JFNC','AC'],
+      titol: 'Bloc independentista de dreta (govern en minoria)',
+      explic: 'Junts+FNC i Alian\u00e7a Catalana comparteixen espai sobiranista de centredreta. Govern en minoria molt feble que necessitaria suports puntuals dif\u00edcils.',
+      alcalde_id: 'JFNC'
+    },
+  ];
+
+  // Filtrar les opcions: només les que tenen els partits amb escons > 0
+  // i calcular els escons reals
+  var opcionsValides = [];
+  opcionsBase.forEach(function(op){
+    var partitsOp = op.ids.filter(function(id){
+      var p = actius.find(function(x){ return x.id === id; });
+      return p && p.escons > 0;
+    });
+    if(partitsOp.length < 2) return; // cal almenys 2 partits
+    if(partitsOp.length < op.ids.length) return; // algun partit no té escons
+
+    var escons = partitsOp.reduce(function(s,id){
+      var p = partits.find(function(x){ return x.id===id; });
+      return s + (p ? p.escons : 0);
+    }, 0);
+
+    opcionsValides.push({
+      grup: partitsOp,
+      escons: escons,
+      arriba: escons >= ABS,
+      titol: op.titol,
+      explic: op.explic,
+      alcalde_id: op.alcalde_id
+    });
+  });
+
+  // Si no hi ha opcions vàlides, recomanar govern en minoria del més votat
+  if(!opcionsValides.length){
+    var maxP = actius.reduce(function(a,b){ return a.escons >= b.escons ? a : b; });
+    return '<div style="padding:.6rem .7rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:.75rem;color:#f59e0b;margin-bottom:.5rem;">⚠️ No hi ha cap pacte viable amb els partits actuals.</div>' +
+      '<div style="font-size:.78rem;line-height:1.7;"><strong>Govern en minoria:</strong> ' + maxP.nom + ' amb ' + maxP.escons + ' regidors.</div>';
+  }
+
+  // Ordenar: primer les que arriben a majoria, després per escons
+  opcionsValides.sort(function(a,b){
+    if(a.arriba !== b.arriba) return b.arriba - a.arriba;
+    return b.escons - a.escons;
+  });
+
+  // Agafar les 2 primeres opcions (diferent composició)
+  var seleccionats = opcionsValides.slice(0, 2);
+
+  function buildPacteHTML(opt, num){
+    var color = opt.arriba ? 'var(--abs)' : '#f59e0b';
+    var label = opt.arriba
+      ? ('Majoria absoluta (' + opt.escons + ' escons)')
+      : ('Minoria (' + opt.escons + ' escons, falten ' + (ABS - opt.escons) + ')');
+    var icon = opt.arriba ? '✓' : '⚠️';
+
+    var alcP = partits.find(function(p){ return p.id === opt.alcalde_id; });
+    // Si el partit de l'alcalde no té escons, agafar el més votat del grup
+    if(!alcP || alcP.escons === 0){
+      alcP = opt.grup.reduce(function(a,b){
+        var pa = partits.find(function(x){ return x.id===a; });
+        var pb = partits.find(function(x){ return x.id===b; });
+        return (pa ? pa.escons : 0) >= (pb ? pb.escons : 0) ? a : b;
+      });
+      alcP = partits.find(function(p){ return p.id===alcP; });
+    }
+
+    var h = '<div style="margin-bottom:.85rem;padding:.75rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;">';
+    h += '<div style="font-size:.68rem;font-weight:700;color:var(--ai);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;">Opció ' + num + ' — ' + opt.titol + '</div>';
+
+    opt.grup.forEach(function(id){
+      var p = partits.find(function(x){ return x.id===id; });
+      if(!p) return;
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);">';
+      h += '<div style="width:9px;height:9px;border-radius:2px;background:' + p.color + ';flex-shrink:0;"></div>';
+      h += '<span style="flex:1;font-size:.76rem;font-weight:600;">' + p.nom + '</span>';
+      h += '<span style="font-size:.73rem;color:var(--muted);">' + p.escons + ' reg.</span>';
+      h += '</div>';
+    });
+
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0 3px;">';
+    h += '<span style="font-size:.73rem;font-weight:700;">Total</span>';
+    h += '<span style="color:' + color + ';font-size:.73rem;font-weight:700;">' + icon + ' ' + label + '</span>';
+    h += '</div>';
+    h += '<div style="font-size:.71rem;color:var(--gold);margin-bottom:.4rem;">Alcaldia: ' + (alcP ? alcP.nom : '—') + '</div>';
+    h += '<div style="font-size:.71rem;line-height:1.55;color:rgba(232,234,240,.75);">' + opt.explic + '</div>';
+    h += '</div>';
+    return h;
+  }
+
+  // Marcar el primer pacte al simulador
+  pacteChecked = {};
+  seleccionats[0].grup.forEach(function(id){ pacteChecked[id] = true; });
+
+  var html = '<div style="font-size:.68rem;color:var(--muted);margin-bottom:.7rem;line-height:1.5;">Tenint en compte la tensió ERC-Junts+FNC i el rol clau del PSC a Manresa:</div>';
+  seleccionats.forEach(function(opt, i){ html += buildPacteHTML(opt, i+1); });
+  html += '<div style="font-size:.62rem;color:var(--muted);">✓ Opció 1 marcada al simulador de pactes</div>';
+  return html;
+}
 
 /* SAVES */
 function getSaves(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY))||[]; }catch(e){ return []; } }
@@ -702,4 +857,5 @@ renderAll();
 renderSaves();
 </script>
 </body>
+</html>
 </html>
